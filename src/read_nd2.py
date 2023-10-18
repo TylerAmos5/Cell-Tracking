@@ -25,7 +25,6 @@ def get_channel_rawData(movie_dict, frame, channel):
     
         if channel in frame_data:
             channel_matrix = frame_data[channel]
-            print(channel_matrix)
         else:
             print("Channel not found")
     else:
@@ -34,7 +33,8 @@ def get_channel_rawData(movie_dict, frame, channel):
     return channel_matrix    
 
 
-nd2_filename = "../doc/WellA01_ChannelmIFP,mCherry,YFP_Seq0000.nd2"
+nd2_filename = "../doc/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd2"
 test_movie = read_nd2(nd2_filename)
 f0_c0 = get_channel_rawData(test_movie, 0, 0)
-print(type(test_movie[0][1]))
+print(f0_c0)
+print(type(test_movie[0][0]))
