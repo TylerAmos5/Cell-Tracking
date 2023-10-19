@@ -11,11 +11,13 @@ def read_nd2(nd2_filename):
             nd2_movie.iter_axes = 't'
             for f in range(nd2_movie.sizes['t']):
                 nd2_movie.iter_axes = 'c'
-                channel_data = {}
+                channel_data = []
                 
                 for c in range(nd2_movie.sizes['c']):
-                    channel_data[c] = nd2_movie[c]
+                    channel_data.append(nd2_movie[c])
                 
+                channel_data = np.array(channel_data)
+                channel_data = channel_data.transpose((1, 2, 0))
                 frame_data[f] = channel_data
             well_data[fov] = frame_data
                 
