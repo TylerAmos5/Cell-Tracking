@@ -25,7 +25,7 @@ def read_nd2(nd2_filename):
     return well_data
 
 def get_channel_rawData(well_data, site, frame, channel):
-    return well_data[site][frame][channel]
+    return well_data[site][frame][:,:, channel]
 
 def get_frame_data(well_data, site, frame):
     return well_data[site][frame]
