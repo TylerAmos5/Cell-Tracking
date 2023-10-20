@@ -1,8 +1,36 @@
+"""Functions to read in an ND2 file with multiple channels and sites
+
+    * read_nd2 - 
+    * get_channel_rawData - 
+    * get_frame_data -
+    * get_site_data - 
+"""
+
 import nd2reader
 import tifffile
 import numpy as np
 
 def read_nd2(nd2_filename):
+    """Get arguments for the get_column() function using argparse.
+
+    Parameters
+    ----------
+    nd2_filename: File name for nd2 file that comes from XXXX microscope 
+                    (edits may be necessary if ND2 file structure differs).
+                    The main repo directory for this file will be specified 
+                    using a separate function, so this parameter should only
+                    include the file path from the main repo.
+    
+    Returns
+    -------
+    well_data: a dictionary with the format:
+                well --> site --> frame[channels]
+                frame contains one 2022 x 2044 2D array for each channel, 
+                    with values for each of the pixels
+                the components of this dictionary can be accessed using:
+                    well_data[site][frame][channel]
+
+    """
     with nd2reader.ND2Reader(nd2_filename) as nd2_movie:
         nd2_movie.iter_axes = 'v'
         well_data = {}
