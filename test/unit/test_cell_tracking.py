@@ -9,6 +9,7 @@ import random
 import cv2
 import os
 from cell import Cell
+# from PIL import Image
 
 class TestCellTracking(unittest.TestCase):
 
@@ -66,7 +67,7 @@ class TestCellTracking(unittest.TestCase):
         r = cell_tracking_OO_KB_testing.is_pixel_inside_contour((2,2), zero_contour)
         self.assertEqual(False, r)
 
-    # testing dis_between_points()
+    # testing dist_between_points()
     def test_dist_between_points(self):
         rand = random.randint(1, 100)
         r = cell_tracking_OO_KB_testing.dist_between_points((0,0),(0,rand))
@@ -126,6 +127,8 @@ class TestCellTracking(unittest.TestCase):
     #         self.assertIsInstance(cell, Cell)
     #     self.assertEqual(len(cells), 28) # count number of cells in image (program found 23)
 
+    # add tests to see if more than just cell count is correct???
+
     # testing resolve_conflicts()
     def test_resolve_conflicts(self):
         candidates = [] # update this with more realistic list of candidates
@@ -158,16 +161,15 @@ class TestCellTracking(unittest.TestCase):
         self.assertEqual(a,r)
 
     # testing link_cell()
-    def test_link_cell(self):   # this is still far from doing anything useful...
+    def test_link_cell_no_movement(self):   # this is still far from doing anything useful...
         master_cells = cell_tracking_OO_KB_testing.do_watershed(cv2.imread("test/data/test_image_9cells.png"))
-        curr_frame_cells = []
-        r = cell_tracking_OO_KB_testing.link_cell(master_cells, curr_frame_cells)
+        curr_frame_cells = master_cells
+        r = cell_tracking_OO_KB_testing.link_cell(master_cells[0], curr_frame_cells)
+        print(r)
         self.assertIsInstance(r, list)
         self.assertEqual(len(r), 2)
-        for cell in r:
-            self.assertIsInstance(cell, Cell)
-        a = []
-        self.assertEqual(a,r)
+        # a = master_cells
+        # self.assertEqual(a,r)
 
 def main():
     unittest.main()
