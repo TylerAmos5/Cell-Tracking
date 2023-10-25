@@ -4,7 +4,6 @@ import numpy as np
 
 def read_nd2(nd2_filename):
     with nd2reader.ND2Reader(nd2_filename) as nd2_movie:
-        print(nd2_movie.sizes)
         nd2_movie.iter_axes = 'v'
         well_data = {}
         for fov in range(nd2_movie.sizes['v']):
