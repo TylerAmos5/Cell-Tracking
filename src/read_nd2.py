@@ -50,7 +50,7 @@ def read_nd2(nd2_filename):
                     nd2_movie.default_coords['t'] = f
                     nd2_movie.default_coords['c'] = c
                     channel_data.append(nd2_movie[c])
-                
+
                 channel_data = np.array(channel_data)
                 channel_data = channel_data.transpose((1, 2, 0))
                 frame_data[f] = channel_data
@@ -80,7 +80,8 @@ def get_channel_rawData(well_data, site, frame, channel):
                                             specified site/frame/channel
                                             with values for each of the pixels
     """
-    return well_data[site][frame][:,:, channel]
+    return well_data[site][frame][:, :, channel]
+
 
 def get_frame_data(well_data, site, frame):
     """Return a dictionary of pixels for all channels for a given site/frame.
