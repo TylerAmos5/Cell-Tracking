@@ -1,26 +1,30 @@
 class Cell:
-    def __init__(self, coords=None, contours=None, parent=None, children=None):
+    def __init__(self, coords=None, contours=None,
+                 parent=None, children=None, birthday=0):
         if coords is None:
             coords = []
         if contours is None:
             contours = []
         if children is None:
             children = []
+        self.birthday = birthday
         self.coords = coords
         self.contours = contours
         self.parent = parent
         self.children = children
 
+        if self.parent is not None:
+            self.coords = parent.coords
 
     def add_coordinate(self, coord):
         self.coords.append(coord)
 
     def add_contour(self, contour):
         self.contours.append(contour)
-    
+
     def add_child(self, child):
         self.children.append(child)
-    
+
     def add_parent(self, p):
         self.parent = p
 
