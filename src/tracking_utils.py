@@ -36,7 +36,7 @@ def get_center(contour):
         cx, cy = 0, 0  # Handle division by zero if the contour has no area
 
     # add centroid to list of cell centers
-    return((cx, cy))
+    return ((cx, cy))
 
 
 # function to segment an image with watershedding
@@ -169,7 +169,6 @@ def resolve_conflicts(candidates):
             comparison_keys = list(comparison_candidates.keys())
 
             comp_most_likely_cell = comparison_keys[0]
-            comp_most_likely_dist = comparison_candidates[comp_most_likely_cell]
             comp_pot_child_cell = comparison_keys[1]
             comp_pot_child_dist = comparison_candidates[comp_pot_child_cell]
 
@@ -237,4 +236,4 @@ def link_next_frame(master_cell_list, curr_frame, frame_num):
             new_cells.append(curr_cell)
 
     # add newborn cells to master cell list
-    return(new_cells)
+    return new_cells
