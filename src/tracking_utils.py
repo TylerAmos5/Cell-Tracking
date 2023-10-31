@@ -1,3 +1,16 @@
+"""Functions for cell tracking.
+
+    * is_pixel_inside_contour - checks if a pixel is inside a contour
+    * get_center - gets center of a contour
+    * do_watershed - segments an image with watershedding
+    * dist_between_points - calculates the distance between two points
+    * link_cell -
+    * resolve_conflicts -
+    * link_next_frame - links all of the cells in a new frame to 
+                        the cell lineages in the master cell list 
+                        (and all previous frames)
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
@@ -124,6 +137,16 @@ def do_watershed(img):
 
 
 def dist_between_points(coord_a, coord_b):
+    """
+    Calculates the distance between two points.
+
+    Args:
+        coord_a: first coordinate (x,y).
+        coord_b: second coordinate (x,y).
+
+    Returns:
+        distance: the distance between coord_a and coord_b.
+    """
     x1, y1 = coord_a
     x2, y2 = coord_b
 
@@ -133,6 +156,16 @@ def dist_between_points(coord_a, coord_b):
 
 
 def link_cell(parent_cell, curr_frame_cells):
+    """
+    ....
+
+    Args:
+        parent_cell:
+        curr_frame_cells:
+
+    Returns:
+        output:
+    """
     # get most recent coordinate of cell from dictionary
     prev_point = parent_cell.get_most_recent_coord()
     # initialize list of distances
@@ -160,6 +193,15 @@ def link_cell(parent_cell, curr_frame_cells):
 
 
 def resolve_conflicts(candidates):
+    """
+    ....
+
+    Args:
+        candidates:
+
+    Returns:
+        resolved_tracks:
+    """
     # loop over candidates
     # print(candidates.shape)
     resolved_tracks = np.empty(len(candidates), dtype=object)
@@ -207,6 +249,21 @@ def resolve_conflicts(candidates):
 
 
 def link_next_frame(master_cell_list, curr_frame, frame_num):
+    """
+    Links all of the cells in a new frame to the cell
+    lineages in the master cell list (and all previous frames).
+    Cells must be matched to their position in the next frame,
+    as well as any possible children (maximum 1), in the event
+    of a division. This is based on proximity.
+
+    Args:
+        master_cell_list: list of cells
+        curr_frame: image from current frame to segment
+        frame_num: frame number (used to note cell "birthdays")
+
+    Returns:
+        new_cells: updated list of cells based on new data
+    """
     # get all the cells in the current frame
     curr_frame_cells = do_watershed(curr_frame)
     # check cells against previous frame
