@@ -2,7 +2,7 @@
 
 ## Description
 
-This software is designed to track single cells with fluorescence in live cell imaging movies in the ND2 format. This code was developed to work for movies with three channels and two sites per well and may need to be adapted if the input file type differs.
+This software is designed to track individual live cells and record protein dynamics using fluorescent time-lapse microscopy data acquired by a Nikon microscope. This code was developed to work for ND2 files with three channels and two sites per well. Our goal is to further generalize this to accept any number of color channels and sites. Additionally, we intend to visualize single cell traces and compare fluorescence values between cells. The current code tracks single cells throughout a movie. The current output is “tracks.csv”, containing cell IDs and corresponding locations in each frame throughout the input movie. Image segmentation via watershedding is conducted on the first frame to identify nuclei to create a list of master cell IDs. Then, each frame that follows is segmented to identify nuclei and is linked to the cells identified in the previous frame. We developed a “Cell” class that stores a cell’s location in each frame, the outline of its nucleus, identities of parent and children, and the “birthday” if the cell was not present in the first frame. This helps analyze the data with single cell resolution.
 
 ## Installation
 
@@ -14,7 +14,7 @@ git clone https://github.com/TylerAmos5/Cell-Tracking.git
 
 ### Setting up an environment
 
-This program relies on a series of packages which are detailed in the environment.yml file. Please install each of these dependencies before proceeding.
+This program relies on a series of packages which are detailed in the environment.yml file. Please install each of these dependencies before proceeding. 
 
 ## Usage
 
@@ -42,11 +42,7 @@ Contains functions required for cell tracking.
 
 #### src/cell.py
 
-??????
-
-#### src/load_tiffs.py
-
-??????
+Defines the cell object class.
 
 #### test/unit/test_cell_tracking.py
 
