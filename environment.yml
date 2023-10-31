@@ -13,4 +13,8 @@ dependencies:
   - pillow
   - certifi
   - nd2reader
+  - pandas
+  - pycodestyle
+  - snakemake
+  - graphviz
 prefix: /Users/tyleramos/mambaforge/envs/cell_tracking
