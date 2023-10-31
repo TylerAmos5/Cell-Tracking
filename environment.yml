@@ -17,4 +17,5 @@ dependencies:
   - pycodestyle
   - snakemake
   - graphviz
-prefix: /Users/tyleramos/mambaforge/envs/cell_tracking
+
+
