@@ -7,9 +7,9 @@ import unittest
 import numpy as np
 import random
 import cv2
-import os
+# import os
 from cell import Cell
-# from PIL import Image
+
 
 class TestCellTracking(unittest.TestCase):
 
@@ -36,7 +36,7 @@ class TestCellTracking(unittest.TestCase):
     def test_get_center_square_contour(self):
         test_contour = (np.array([[[1, 1]], [[1, 5]], [[5, 5]], [[5, 1]]]))
         r = cell_tracking_OO_KB_testing.get_center(test_contour)
-        a = (3,3)
+        a = (3, 3)
         self.assertEqual(a, r)
 
     def test_get_center_divide_by_zero(self):
@@ -45,18 +45,18 @@ class TestCellTracking(unittest.TestCase):
                                [[0, 0]], [[0, 0]], [[0, 0]],
                                [[0, 0]], [[0, 0]], [[0, 0]]]))
         r = cell_tracking_OO_KB_testing.get_center(zero_contour)
-        a = (0,0)
+        a = (0, 0)
         self.assertEqual(a, r)
-    
+
     # testing is_pixel_inside_contour()
     def test_is_pixel_inside_contour_false(self):
         test_contour = (np.array([[[1, 1]], [[1, 5]], [[5, 5]], [[5, 1]]]))
-        r = cell_tracking_OO_KB_testing.is_pixel_inside_contour((6,6), test_contour)
+        r = cell_tracking_OO_KB_testing.is_pixel_inside_contour((6, 6), test_contour)
         self.assertEqual(False, r)
 
     def test_is_pixel_inside_contour_true(self):
         test_contour = (np.array([[[1, 1]], [[1, 5]], [[5, 5]], [[5, 1]]]))
-        r = cell_tracking_OO_KB_testing.is_pixel_inside_contour((2,2), test_contour)
+        r = cell_tracking_OO_KB_testing.is_pixel_inside_contour((2, 2), test_contour)
         self.assertEqual(True, r)
 
     def test_is_pixel_inside_contour_zero_contour(self):
@@ -64,27 +64,27 @@ class TestCellTracking(unittest.TestCase):
                                [[0, 0]], [[0, 0]], [[0, 0]],
                                [[0, 0]], [[0, 0]], [[0, 0]],
                                [[0, 0]], [[0, 0]], [[0, 0]]]))
-        r = cell_tracking_OO_KB_testing.is_pixel_inside_contour((2,2), zero_contour)
+        r = cell_tracking_OO_KB_testing.is_pixel_inside_contour((2, 2), zero_contour)
         self.assertEqual(False, r)
 
     # testing dist_between_points()
     def test_dist_between_points(self):
         rand = random.randint(1, 100)
-        r = cell_tracking_OO_KB_testing.dist_between_points((0,0),(0,rand))
+        r = cell_tracking_OO_KB_testing.dist_between_points((0, 0),(0, rand))
         a = rand
-        self.assertEqual(a,r)
+        self.assertEqual(a, r)
 
     def test_dist_between_points_same_point(self):
-        r = cell_tracking_OO_KB_testing.dist_between_points((0,1),(0,1))
+        r = cell_tracking_OO_KB_testing.dist_between_points((0, 1),(0, 1))
         a = 0
-        self.assertEqual(a,r)
+        self.assertEqual(a, r)
 
     def test_dist_between_points_random_points(self):
         g = (random.randint(1, 100), random.randint(1, 100))
         h = (random.randint(1, 100), random.randint(1, 100))
         r = cell_tracking_OO_KB_testing.dist_between_points(g,h)
         a = ((g[0]-h[0])**2 + (g[1]-h[1])**2)**0.5
-        self.assertEqual(a,r)
+        self.assertEqual(a, r)
 
     # testing do_watershed()
     def test_do_watershed_black_image(self):
@@ -96,32 +96,32 @@ class TestCellTracking(unittest.TestCase):
         self.assertEqual([], cells) # see if list of cells empty for blank image
 
     def test_do_watershed_test_image(self):
-        img = cv2.imread("test/data/test_image.png") # image of "normal" size        
+        img = cv2.imread("test/data/test_image.png")  # image of "normal" size        
         cells = cell_tracking_OO_KB_testing.do_watershed(img)    
         self.assertIsInstance(cells, list) 
         for cell in cells:
             self.assertIsInstance(cell, Cell)  
-        self.assertNotEqual([], cells) # should be cells in this image
+        self.assertNotEqual([], cells)  # should be cells in this image
 
     def test_do_watershed_test_image_9cells(self):
-        img = cv2.imread("test/data/test_image_9cells.png")         
-        cells = cell_tracking_OO_KB_testing.do_watershed(img)    
+        img = cv2.imread("test/data/test_image_9cells.png")   
+        cells = cell_tracking_OO_KB_testing.do_watershed(img)
         self.assertIsInstance(cells, list)
         for cell in cells:
             self.assertIsInstance(cell, Cell)  
-        self.assertEqual(len(cells), 9) # count number of cells in image
+        self.assertEqual(len(cells), 9)  # count number of cells in image
 
     # def test_do_watershed_test_image_varied_size_brightness(self): # CURRENTLY FAILS
-    #     img = cv2.imread("test/data/test_image_varied_size_brightness_15.png")         
-    #     cells = cell_tracking_OO_KB_testing.do_watershed(img)    
+    #     img = cv2.imread("test/data/test_image_varied_size_brightness_15.png")
+    #     cells = cell_tracking_OO_KB_testing.do_watershed(img)
     #     self.assertIsInstance(cells, list)
     #     for cell in cells:
     #         self.assertIsInstance(cell, Cell)
     #     self.assertEqual(len(cells), 15) # count number of cells in image (program found 9)
 
     # def test_do_watershed_test_image_some_overlap(self): # CURRENTLY FAILS
-    #     img = cv2.imread("test/data/test_image_some_overlap_28.png")         
-    #     cells = cell_tracking_OO_KB_testing.do_watershed(img)    
+    #     img = cv2.imread("test/data/test_image_some_overlap_28.png")   
+    #     cells = cell_tracking_OO_KB_testing.do_watershed(img)
     #     self.assertIsInstance(cells, list)
     #     for cell in cells:
     #         self.assertIsInstance(cell, Cell)
@@ -158,18 +158,19 @@ class TestCellTracking(unittest.TestCase):
         for cell in r:
             self.assertIsInstance(cell, Cell)
         a = []
-        self.assertEqual(a,r)
+        self.assertEqual(a, r)
 
     # testing link_cell()
     def test_link_cell_no_movement(self):   # this is still far from doing anything useful...
         master_cells = cell_tracking_OO_KB_testing.do_watershed(cv2.imread("test/data/test_image_9cells.png"))
         curr_frame_cells = master_cells
         r = cell_tracking_OO_KB_testing.link_cell(master_cells[0], curr_frame_cells)
-        print(r)
+        # print(r)
         self.assertIsInstance(r, list)
         self.assertEqual(len(r), 2)
         # a = master_cells
         # self.assertEqual(a,r)
+
 
 def main():
     unittest.main()
