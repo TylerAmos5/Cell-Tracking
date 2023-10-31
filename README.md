@@ -14,7 +14,7 @@ git clone https://github.com/TylerAmos5/Cell-Tracking.git
 
 ### Setting up an environment
 
-This program relies on a series of packages which are detailed in the environment.yml file. Please install each of these dependencies before proceeding.
+This program relies on a series of packages which are detailed in the environment.yml file. Please install each of these dependencies before proceeding. 
 
 ## Usage
 
