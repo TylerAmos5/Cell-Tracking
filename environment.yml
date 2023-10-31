@@ -14,4 +14,8 @@ dependencies:
   - certifi
   - nd2reader
   - pandas
-prefix: /Users/tyleramos/mambaforge/envs/cell_tracking
+  - pycodestyle
+  - snakemake
+  - graphviz
+
+
