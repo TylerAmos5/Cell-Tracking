@@ -1,0 +1,16 @@
+name: cell_tracking
+channels:
+  - defaults
+  - bioconda
+  - conda-forge
+dependencies:
+  - python
+  - numpy
+  - ca-certificates
+  - openssl
+  - matplotlib
+  - ipykernel
+  - pillow
+  - certifi
+  - nd2reader
+prefix: /Users/tyleramos/mambaforge/envs/cell_tracking
