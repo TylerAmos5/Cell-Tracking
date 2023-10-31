@@ -25,6 +25,15 @@ def is_pixel_inside_contour(pixel, contour):
 
 
 def get_center(contour):
+    """
+    Gets center of contour.
+
+    Args:
+        contour: A list of contour points, obtained from cv2.findContours.
+
+    Returns:
+        The centroid of the contour (x,y).
+    """
     # Calculate moments for the contour
     M = cv2.moments(contour)
 
@@ -39,10 +48,16 @@ def get_center(contour):
     return ((cx, cy))
 
 
-# function to segment an image with watershedding
-# input: image to segment
-# output: list of cells (1 for each cell)
 def do_watershed(img):
+    """
+    Segments an image with watershedding.
+
+    Args:
+        img: image to segment
+
+    Returns:
+        cells: list of cells (1 for each cell)
+    """
     # img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
     # convert to grayscale
     grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
