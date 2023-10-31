@@ -20,9 +20,8 @@ def get_args():
     args
         arguments input by the user
     """
-    parser = argparse.ArgumentParser(description='Query a column '
-                                     'of a csv and return desired result',
-                                     prog='print_fires')
+    parser = argparse.ArgumentParser(description='obtain ND2 file name ',
+                                     prog='get_args')
     parser.add_argument('--file_path',
                         type=str,
                         help='.nd2 File',
