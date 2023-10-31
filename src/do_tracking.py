@@ -17,8 +17,7 @@ def get_args():
 
     Returns
     -------
-    args
-        arguments input by the user
+    args: argument input by the user for --file_path
     """
     parser = argparse.ArgumentParser(description='obtain ND2 file name ',
                                      prog='get_args')
