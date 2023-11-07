@@ -191,10 +191,63 @@ def link_cell(parent_cell, curr_frame_cells):
     output[closest_cells[1]] = curr_smallest_dists[1]
     return output
 
-
-def resolve_conflicts(candidates):
+def check_unique(cell_list):
     """
-    ....
+    Checks if any cells share a position in the most recent frame,
+    and returns a dictionary of cells with shared positions, where
+    the key is the cell and the value is the position.
+    
+    Args:
+        cell_list:
+
+    Returns:
+        non_unique_cells:
+    """
+    non_uniques = {}
+    positions_dict = {}
+    for curr_cell in cell_list:
+        # extract position and add to positions list
+        curr_position = curr_cell.get_most_recent_coord()
+        positions_dict[curr_cell] = curr_position
+        # if position is already in list, add both cells to non_unique list
+        for comparison_cell, comparison_position in positions_dict:
+            if curr_position == comparison_position:
+                non_uniques[curr_cell] = curr_position
+                # check if comparison cell is already in non_uniques
+                not_in_dict = True
+                for non_unique_cell in non_uniques:
+                    if non_unique_cell == comparison_cell:
+                        not_in_dict = False
+                        break
+                # if cell is not already in non_unique list, add it
+                if not_in_dict:
+                    non_uniques[comparison_cell] = comparison_position
+                    
+    return non_uniques
+        
+    
+
+def cull_duplicates(non_unique_cell_list):
+    """
+    Ensures that two cells aren't assigned the same position in a new frame,
+    and removes duplicate cells created from segmentation errors.
+    Designed to resolve errors in segmentation where one cell is identified
+    as multiple cells, or multiple cells as one, intermittently. 
+    
+    Args:
+        non_unique_cell_list:
+
+    Returns:
+        resolved_tracks:
+    """
+
+    # first, check if any two cells share a most recent position
+    # iterate over list of cells and extract positions
+
+def resolve_child_conflicts(candidates):
+    """
+    Ensures that each child only has one parent. Matches each child to its
+    most likely parent based on proximity, and drops other possible parents.
 
     Args:
         candidates:
@@ -277,7 +330,7 @@ def link_next_frame(master_cell_list, curr_frame, frame_num):
     # now we have list of possible candidates
     # want to make sure that each cell has
     # one & only one candidate child (or 2 in the case it divided)
-    resolved_tracks = resolve_conflicts(candidates)
+    resolved_tracks = resolve_child_conflicts(candidates)
 
     # initialize list of new cells to add
     new_cells = []
