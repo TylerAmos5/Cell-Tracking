@@ -225,7 +225,12 @@ def get_cells_to_cull(cell_list):
 
     cells_to_cull = set(cells_to_cull)           
     return cells_to_cull
-        
+
+
+def set_all_problematics(cell_list):
+    for cell in cell_list: # cells_to_cull
+        cell.make_problematic_cell()
+
 
 def cull_duplicates(cell_list):
     """
@@ -307,6 +312,38 @@ def resolve_child_conflicts(candidates):
     return resolved_tracks
 
 
+def track_healing(cell_list, dist_thresh):
+    # check if anything is problematic
+    # if problematic do healing
+    # if no longer problematic, add
+    # if still problematic, kill
+
+    for cell in cell_list:
+        # get most recent coord
+        most_recent_coord = cell.get_most_recent_coord()
+        # get coord from 2 frames ago
+        two_frames_ago_coord = cell.coords[len(cell.coords)-3]
+        # if dist between positions is below threshold, heal track
+        if dist_between_points(most_recent_coord, two_frames_ago_coord):
+            # set coord from 1 frame ago to avg of recent positions
+            healed_x = (most_recent_coord[0] + two_frames_ago_coord[0])/2
+            healed_y = (most_recent_coord[1] + two_frames_ago_coord[1])/2
+            healed_pos = (healed_x, healed_y)
+            cell.coords[len(cell.coords)-2] = healed_pos
+            # make unproblematic
+            cell.make_unproblematic_cell()
+
+
+# gets all problematic cells from cell list
+def get_all_problematics(cell_list):
+    problem_cells = []
+    for cell in cell_list:
+        if cell.problematic:
+            problem_cells.append(cell)
+    if len(problem_cells) == 0:
+        return None
+
+
 def link_next_frame(master_cell_list, curr_frame, frame_num):
     """
     Links all of the cells in a new frame to the cell
@@ -369,3 +406,39 @@ def link_next_frame(master_cell_list, curr_frame, frame_num):
 
     # add newborn cells to master cell list
     return new_cells
+
+
+def correct_links(cell_list, distance_threshold):
+
+    # get old problematic cells
+    old_problematics = get_all_problematics(cell_list)
+    # attempt to deal with these through track healing
+    if old_problematics is not None:
+        print(len(old_problematics))
+        track_healing(old_problematics, distance_threshold)
+        # see which of these are still problematic
+        still_problematics = get_all_problematics(old_problematics)
+        print(len(still_problematics))
+        # cull still problematic cells
+        corrected_cell_list = cull_duplicates(still_problematics)
+        # now there should be no problematic cells left
+        # they have been either culled or healed
+        # so now, can get new problematic cells
+        current_problematic_cells = get_cells_to_cull(corrected_cell_list)
+        set_all_problematics(current_problematic_cells)
+        return corrected_cell_list
+    else:
+        current_problematic_cells = get_cells_to_cull(cell_list)
+        print(len(current_problematic_cells))
+        # set problematic
+        set_all_problematics(current_problematic_cells)
+        test = get_all_problematics(cell_list)
+        print(len(test))
+        return cell_list
+
+
+
+
+
+
+
