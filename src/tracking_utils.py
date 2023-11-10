@@ -246,7 +246,7 @@ def cull_duplicates(cell_list, problematic_cells):
         resolved_tracks:
     """
 
-    # now remove these cells from cell list
+    # remove problematic cells from cell list
     culled_set = set(cell_list).difference(set(problematic_cells))
 
     resolved_tracks = list(culled_set)
@@ -311,10 +311,8 @@ def resolve_child_conflicts(candidates):
 
 
 def track_healing(cell_list, dist_thresh):
-    # check if anything is problematic
-    # if problematic do healing
-    # if no longer problematic, add
-    # if still problematic, kill
+    # iterate over cell list and attempt healing
+    # if healing is done, make unproblematic
 
     for cell in cell_list:
         # get most recent coord
