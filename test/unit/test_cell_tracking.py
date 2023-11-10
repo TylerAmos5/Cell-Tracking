@@ -233,8 +233,9 @@ class TestCellTracking(unittest.TestCase):
         self.assertEqual(len(r), 2)
         self.assertIn(curr_frame_cells[0], r)  # original cell should be in the output
 
-    def test_cull_duplicates(self):
-        # make synthetic cell list to test check_unique on
+    # test get_cells_to_cull()
+    def test_get_cells_to_cull(self):
+        # make synthetic cell list to test on
         test_cell_list = []
         test_positions = [(10,10), (2,5), (100,7), (100,7), (10,10), (55,55)]
         test_previous_positions = [(9,9), (3,5), (150,70), (90,8), (11,11), (54,60)]
@@ -245,13 +246,78 @@ class TestCellTracking(unittest.TestCase):
             test_cell_list.append(test_cell)
 
         # expected output
-        output = [[(54, 60), (55, 55)],[(90, 8), (100, 7)], [(11, 11), (10, 10)], [(3, 5), (2, 5)]]
+        output = [[(9, 9), (10, 10)],[(150,70), (100, 7)]]
+
+        # test get_cells_to_cull function
+        to_cull_list = tracking_utils.get_cells_to_cull(test_cell_list)
+        for item in to_cull_list:
+            self.assertIn(item.coords, output)
+
+    def test_get_cells_to_cull_no_duplicates(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10,11), (2,5), (100,9), (100,7), (10,10), (55,55)]
+        test_previous_positions = [(9,9), (3,5), (150,70), (90,8), (11,11), (54,60)]
+        for i in range(6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell_list.append(test_cell)
+
+        # expected output
+        output = []
+
+        # test get_cells_to_cull function
+        to_cull_list = tracking_utils.get_cells_to_cull(test_cell_list)
+        for item in to_cull_list:
+            self.assertIn(item.coords, output)
+
+    # test cull_duplicates()
+    def test_cull_duplicates(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10,10), (2,5), (100,7), (100,7), (10,10), (55,55)]
+        test_previous_positions = [(9,9), (3,5), (150,70), (90,8), (11,11), (54,60)]
+        for i in range(6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell_list.append(test_cell)
+
+        # expected output
+        output = [[(54, 60), (55, 55)],
+                  [(90, 8), (100, 7)],
+                  [(11, 11), (10, 10)],
+                  [(3, 5), (2, 5)]]
 
         # test culling function
         culled_list = tracking_utils.cull_duplicates(test_cell_list)
         for item in culled_list:
             self.assertIn(item.coords, output)
 
+    def test_cull_duplicates_no_duplicates(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10,11), (2,5), (100,9), (100,7), (10,10), (55,55)]
+        test_previous_positions = [(9,9), (3,5), (150,70), (90,8), (11,11), (54,60)]
+        for i in range(6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell_list.append(test_cell)
+
+        # expected output
+        output = [[(54, 60), (55, 55)],
+                  [(90, 8), (100, 7)],
+                  [(11, 11), (10, 10)],
+                  [(3, 5), (2, 5)],
+                  [(9, 9), (10, 11)],
+                  [(150,70), (100, 9)]]
+
+        # test culling function
+        culled_list = tracking_utils.cull_duplicates(test_cell_list)
+        for item in culled_list:
+            self.assertIn(item.coords, output)
 
 def main():
     unittest.main()
