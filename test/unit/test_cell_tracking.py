@@ -233,41 +233,24 @@ class TestCellTracking(unittest.TestCase):
         self.assertEqual(len(r), 2)
         self.assertIn(curr_frame_cells[0], r)  # original cell should be in the output
 
-    # def test_check_unique(self):
-    #     """
-    #     Checks if any cells share a position in the most recent frame,
-    #     and returns a dictionary of cells with shared positions, where
-    #     the key is the cell and the value is the position.
-        
-    #     Args:
-    #         cell_list:
+    def test_cull_duplicates(self):
+        # make synthetic cell list to test check_unique on
+        test_cell_list = []
+        test_positions = [(10,10), (2,5), (100,7), (100,7), (10,10), (55,55)]
+        test_previous_positions = [(9,9), (3,5), (150,70), (90,8), (11,11), (54,60)]
+        for i in range(6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell_list.append(test_cell)
 
-    #     Returns:
-    #         non_unique_cells:
-    #     """
-    #     non_uniques = {}
-    #     positions_dict = {}
-    #     for curr_cell in cell_list:
-    #         # extract position
-    #         curr_position = curr_cell.get_most_recent_coord()
-    #         # if position is already in list, add both cells to non_unique list
-    #         for comparison_cell in positions_dict:
-    #             comparison_position = positions_dict[comparison_cell]
-    #             if curr_position == comparison_position:
-    #                 non_uniques[curr_cell] = curr_position
-    #                 # check if comparison cell is already in non_uniques
-    #                 not_in_dict = True
-    #                 for non_unique_cell in non_uniques:
-    #                     if non_unique_cell == comparison_cell:
-    #                         not_in_dict = False
-    #                         break
-    #                 # if cell is not already in non_unique list, add it
-    #                 if not_in_dict:
-    #                     non_uniques[comparison_cell] = comparison_position
-    #         # add to positions list
-    #         positions_dict[curr_cell] = curr_position
-                        
-    #     return non_uniques
+        # expected output
+        output = [[(54, 60), (55, 55)],[(90, 8), (100, 7)], [(11, 11), (10, 10)], [(3, 5), (2, 5)]]
+
+        # test culling function
+        culled_list = tracking_utils.cull_duplicates(test_cell_list)
+        for item in culled_list:
+            self.assertIn(item.coords, output)
 
 
 def main():

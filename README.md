@@ -91,3 +91,5 @@ python test/unit/test_cell_tracking.py
 10/27/23: ipynb files converted to python scripts
 
 10/30/23: snakemake workflow added
+
+11/10/23: worked on culling functions and testing framework
