@@ -317,7 +317,6 @@ def track_healing(cell_list, dist_thresh):
     # if still problematic, kill
 
     for cell in cell_list:
-        cell = cell_list[i]
         # get most recent coord
         most_recent_coord = cell.get_most_recent_coord()
         # get coord from 2 frames ago
