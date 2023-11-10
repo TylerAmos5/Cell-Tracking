@@ -31,7 +31,7 @@ def read_nd2(nd2_filename):
     -------
     well_data: a dictionary with the format:
                 well --> site --> frame[channels]
-                frame contains one 2022 x 2044 2D array for each channel,
+                frame contains one 2048 x 2044 2D array for each channel,
                     with values for each of the pixels
                 the components of this dictionary can be accessed using:
                     well_data[site][frame][channel]
@@ -60,13 +60,13 @@ def read_nd2(nd2_filename):
 
 def get_channel_rawData(well_data, site, frame, channel):
     """Return pixel values for a given site/frame/channel in
-            a 2022 x 2044 array.
+            a 2048 x 2044 array.
 
     Parameters
     ----------
     well_data: a dictionary with the format:
                 well --> site --> frame[channels]
-                frame contains one 2022 x 2044 2D array for each channel,
+                frame contains one 2048 x 2044 2D array for each channel,
                     with values for each of the pixels
                 the components of this dictionary can be accessed using:
                     well_data[site][frame][channel]
@@ -76,7 +76,7 @@ def get_channel_rawData(well_data, site, frame, channel):
 
     Returns
     -------
-    well_data[site][frame][:, :, channel]: a 2022 x 2044 2D array for the
+    well_data[site][frame][:, :, channel]: a 2048 x 2044 2D array for the
                                             specified site/frame/channel
                                             with values for each of the pixels
     """
@@ -90,7 +90,7 @@ def get_frame_data(well_data, site, frame):
     ----------
     well_data: a dictionary with the format:
                 well --> site --> frame[channels]
-                frame contains one 2022 x 2044 2D array for each channel,
+                frame contains one 2048 x 2044 2D array for each channel,
                     with values for each of the pixels
                 the components of this dictionary can be accessed using:
                     well_data[site][frame][channel]
@@ -99,7 +99,7 @@ def get_frame_data(well_data, site, frame):
 
     Returns
     -------
-    well_data[site][frame]: a dictionary of 2022 x 2044 2D arrays for the
+    well_data[site][frame]: a dictionary of 2048 x 2044 2D arrays for the
                                 specified site/frame for all channels
                                 with values for each of the pixels
     """
@@ -114,7 +114,7 @@ def get_site_data(well_data, site):
     ----------
     well_data: a dictionary with the format:
                 well --> site --> frame[channels]
-                frame contains one 2022 x 2044 2D array for each channel,
+                frame contains one 2048 x 2044 2D array for each channel,
                     with values for each of the pixels
                 the components of this dictionary can be accessed using:
                     well_data[site][frame][channel]
@@ -122,7 +122,7 @@ def get_site_data(well_data, site):
 
     Returns
     -------
-    well_data[site]: a dictionary of 2022 x 2044 2D arrays for the
+    well_data[site]: a dictionary of 2048 x 2044 2D arrays for the
                         specified site with the format
                         site --> frame[channel]
     """
