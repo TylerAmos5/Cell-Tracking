@@ -232,7 +232,7 @@ def set_all_problematics(cell_list):
         cell.make_problematic_cell()
 
 
-def cull_duplicates(cell_list):
+def cull_duplicates(cell_list, problematic_cells):
     """
     Ensures that two cells aren't assigned the same position in a new frame,
     and removes duplicate cells created from segmentation errors.
@@ -246,10 +246,8 @@ def cull_duplicates(cell_list):
         resolved_tracks:
     """
 
-    # first, get list of cells to cull
-    cells_to_cull = get_cells_to_cull(cell_list)
     # now remove these cells from cell list
-    culled_set = set(cell_list).difference(cells_to_cull)
+    culled_set = set(cell_list).difference(set(problematic_cells))
 
     resolved_tracks = list(culled_set)
     return resolved_tracks
@@ -417,13 +415,14 @@ def correct_links(cell_list, distance_threshold):
     old_problematics = get_all_problematics(cell_list)
     # attempt to deal with these through track healing
     if old_problematics is not None:
-        print(len(old_problematics))
         track_healing(old_problematics, distance_threshold)
         # see which of these are still problematic
         still_problematics = get_all_problematics(old_problematics)
-        print(len(still_problematics))
         # cull still problematic cells
-        corrected_cell_list = cull_duplicates(still_problematics)
+        if still_problematics is not None:
+            corrected_cell_list = cull_duplicates(cell_list, still_problematics)
+        else:
+            corrected_cell_list = cell_list
         # now there should be no problematic cells left
         # they have been either culled or healed
         # so now, can get new problematic cells
@@ -432,11 +431,9 @@ def correct_links(cell_list, distance_threshold):
         return corrected_cell_list
     else:
         current_problematic_cells = get_cells_to_cull(cell_list)
-        print(len(current_problematic_cells))
         # set problematic
         set_all_problematics(current_problematic_cells)
         test = get_all_problematics(cell_list)
-        print(len(test))
         return cell_list
 
 
