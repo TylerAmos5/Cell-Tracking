@@ -208,9 +208,9 @@ def get_cells_to_cull(cell_list):
     for curr_cell in cell_list:
         # extract position and add to positions list
         curr_position = curr_cell.get_most_recent_coord()
-        positions_dict[curr_cell] = curr_position
         # if position is already in list, figure out which cell should be culled
-        for comparison_cell, comparison_position in positions_dict:
+        for comparison_cell in positions_dict:
+            comparison_position = positions_dict[comparison_cell]
             if curr_position == comparison_position:
                 # check which cell was closer to new position
                 comparison_dist = dist_between_points(comparison_cell.coords[len(comparison_cell.coords)-2],
@@ -221,7 +221,8 @@ def get_cells_to_cull(cell_list):
                     cells_to_cull.append(curr_cell)
                 else:
                     cells_to_cull.append(comparison_cell)
-    
+        positions_dict[curr_cell] = curr_position
+
     cells_to_cull = set(cells_to_cull)           
     return cells_to_cull
         
@@ -324,6 +325,7 @@ def link_next_frame(master_cell_list, curr_frame, frame_num):
     """
     # get all the cells in the current frame
     curr_frame_cells = do_watershed(curr_frame)
+
     # check cells against previous frame
     candidates = np.empty(len(master_cell_list), dtype=object)
     for i in range(0, len(master_cell_list)):

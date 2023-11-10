@@ -56,6 +56,7 @@ def main():
                                  cv2.NORM_MINMAX, dtype=cv2.CV_8U)
         master_cells = tracking_utils.link_next_frame(master_cells,
                                                       curr_rbg, i)
+        master_cells = tracking_utils.cull_duplicates(master_cells)
         numcells.append(len(master_cells))
 
     dtype = [('cell', 'U10'), ('x', int), ('y', int), ('t', int)]
