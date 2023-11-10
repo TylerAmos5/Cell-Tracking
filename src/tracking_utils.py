@@ -319,12 +319,13 @@ def track_healing(cell_list, dist_thresh):
     # if still problematic, kill
 
     for cell in cell_list:
+        cell = cell_list[i]
         # get most recent coord
         most_recent_coord = cell.get_most_recent_coord()
         # get coord from 2 frames ago
         two_frames_ago_coord = cell.coords[len(cell.coords)-3]
         # if dist between positions is below threshold, heal track
-        if dist_between_points(most_recent_coord, two_frames_ago_coord):
+        if dist_between_points(most_recent_coord, two_frames_ago_coord) < dist_thresh:
             # set coord from 1 frame ago to avg of recent positions
             healed_x = (most_recent_coord[0] + two_frames_ago_coord[0])/2
             healed_y = (most_recent_coord[1] + two_frames_ago_coord[1])/2
@@ -342,6 +343,8 @@ def get_all_problematics(cell_list):
             problem_cells.append(cell)
     if len(problem_cells) == 0:
         return None
+    else:
+        return problem_cells
 
 
 def link_next_frame(master_cell_list, curr_frame, frame_num):
