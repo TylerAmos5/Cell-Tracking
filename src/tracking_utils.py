@@ -5,7 +5,7 @@
     * do_watershed - segments an image with watershedding
     * dist_between_points - calculates the distance between two points
     * link_cell -
-    * resolve_conflicts -
+    * resolve_child_conflicts -
     * link_next_frame - links all of the cells in a new frame to 
                         the cell lineages in the master cell list 
                         (and all previous frames)
@@ -23,7 +23,7 @@ import pandas as pd
 
 def is_pixel_inside_contour(pixel, contour):
     """
-    Checks if a pixel is inside a contour.
+    Checks if a pixel is inside a contour (is fluorescence inside a cell).
 
     Args:
         pixel: A tuple (x, y) representing the pixel's coordinates.
