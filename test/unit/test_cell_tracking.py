@@ -129,7 +129,7 @@ class TestCellTracking(unittest.TestCase):
 
     # add tests to see if more than just cell count is correct???
 
-    # testing resolve_conflicts()
+    # testing resolve_child_conflicts()
     def test_resolve_child_conflicts(self):
         candidates = [] # update this with more realistic list of candidates
         resolved_tracks = tracking_utils.resolve_child_conflicts(candidates)
@@ -138,13 +138,13 @@ class TestCellTracking(unittest.TestCase):
 
     # these still need to be worked out:
 
-    # def test_resolve_conflicts_no_conflicts(self):
+    # def test_resolve_child_conflicts_no_conflicts(self):
     #     candidates = []
     #     r= cell_tracking_OO_KB_testing.resolve_conflicts(candidates)
     #     a = []
     #     self.assertEqual(a,r)
 
-    # def test_resolve_conflicts_with_conflicts(self):
+    # def test_resolve_child_conflicts_with_conflicts(self):
     #     candidates = []
     #     r = cell_tracking_OO_KB_testing.resolve_conflicts(candidates)
     #     a = []
@@ -318,6 +318,10 @@ class TestCellTracking(unittest.TestCase):
         culled_list = tracking_utils.cull_duplicates(test_cell_list)
         for item in culled_list:
             self.assertIn(item.coords, output)
+
+    # test link_next_frame()
+    # def test_link_next_frame(self):
+
 
 def main():
     unittest.main()
