@@ -2,7 +2,7 @@ import numpy as np
 
 class Cell:
     def __init__(self, coords=None, contours=None,
-                 parent=None, children=None, birthday=0, problematic=False):
+                 parent=None, children=None, birthday=0, problematic=0):
         if coords is None:
             coords = []
         if contours is None:
@@ -37,11 +37,11 @@ class Cell:
         most_recent_coord = self.coords[len(self.coords)-1]
         return most_recent_coord
     
-    def make_problematic_cell(self):
-        self.problematic = True
+    def increment_problematic(self):
+        self.problematic += 1
     
     def make_unproblematic_cell(self):
-        self.problematic = False
+        self.problematic -= 1
 
     def __str__(self):
         return f"Cell: Coords={self.coords}, Num Contours={len(self.contours)}"

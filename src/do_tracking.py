@@ -58,8 +58,17 @@ def main():
                                  cv2.NORM_MINMAX, dtype=cv2.CV_8U)
         master_cells = tracking_utils.link_next_frame(master_cells,
                                                       curr_rbg, i)
-        master_cells = tracking_utils.correct_links(master_cells)
+        master_cells = tracking_utils.correct_links(master_cells,  distance_threshold=30)
+        
+        if i == (len(site0)-1):
+            # cull remaining problematic cells from last frame
+            remaining_problematics = tracking_utils.get_all_problematics(master_cells)
+            master_cells = tracking_utils.cull_duplicates(master_cells, remaining_problematics)
+            
         numcells.append(len(master_cells))
+
+    remaining_death_row = tracking_utils.get_all_death_row(master_cells)
+    print(remaining_death_row)
 
     dtype = [('cell', 'U10'), ('x', int), ('y', int), ('t', int)]
 
