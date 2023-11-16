@@ -64,6 +64,7 @@ def main():
     # Create an empty array with the specified dtype
     tracks = np.empty((len(master_cells) * len(site0) + 1,), dtype=dtype)
 
+
     # Populate the 'tracks' array
     tracks['cell'][1:] = [str(i)
                           for i in range(len(master_cells))
