@@ -7,6 +7,7 @@ import unittest
 import numpy as np
 import random
 import cv2
+import tifffile
 # import os
 from cell import Cell
 
@@ -132,7 +133,7 @@ class TestCellTracking(unittest.TestCase):
     # testing resolve_child_conflicts()
     def test_resolve_child_conflicts_empty_candidates(self):
         candidates = []
-        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 25)
+        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates)  # need to add threshold once pull
         for cell in resolved_tracks:
             for i in cell:
                 self.assertIsInstance(i, Cell)
@@ -148,7 +149,7 @@ class TestCellTracking(unittest.TestCase):
         # keys are the cell objects, there are two, the first is the most likely cell, the second is the child cell
     
         candidates = [{cell_1:2,cell_4:10},{cell_2:3,cell_3:5}]
-        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 25)
+        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates)  # need to add threshold once pull
         for cell in resolved_tracks:
             for i in cell:
                 self.assertIsInstance(i, Cell)
@@ -165,7 +166,7 @@ class TestCellTracking(unittest.TestCase):
         # keys are the cell objects, there are two, the first is the most likely cell, the second is the child cell
     
         candidates = [{cell_1:2,cell_3:10},{cell_2:3,cell_3:5}]
-        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 25)
+        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates)  # need to add threshold once pull
         for cell in resolved_tracks:
             for i in cell:
                 self.assertIsInstance(i, Cell)
@@ -182,7 +183,7 @@ class TestCellTracking(unittest.TestCase):
         # keys are the cell objects, there are two, the first is the most likely cell, the second is the child cell
     
         candidates = [{cell_1:2,cell_2:10},{cell_2:3,cell_3:5}] # dictionary with key as cell object, value as distance from potential parent in previous frame 
-        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 25)
+        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates)  # need to add threshold once pull
         for cell in resolved_tracks:
             for i in cell:
                 self.assertIsInstance(i, Cell)
@@ -367,13 +368,46 @@ class TestCellTracking(unittest.TestCase):
             self.assertIn(item.coords, output)
 
     # test link_next_frame()
-    # def test_link_next_frame(self):
-        # master_cells = []
-        # curr_frame = 
-        # output = tracking_utils.link_next_frame(master_cells, curr_frame, 1)
-    #    for cell in output:
-    #        self.assertIsInstance(cell, Cell)
+    def test_link_next_frame_same_image(self):
+        image = tifffile.imread("test/data/test_frame_4_cells.tif")
+        master_cells = tracking_utils.do_watershed(image)
+        curr_frame = image
+        orig_cell_coords = []
+        for cell in master_cells:
+            for coords in cell.coords:
+                x = coords[0]
+                y = coords[1]
+                coord = [(x,y)]
+            orig_cell_coords.append(coord)
+        output = tracking_utils.link_next_frame(master_cells, curr_frame, 1)
+        self.assertEqual(len(output), 4)
+        for i, cell in enumerate(output):
+           self.assertIsInstance(cell, Cell)
+           # all cells should have same location as previous frame because same image
+           self.assertEqual(cell.coords[0], orig_cell_coords[i][0])
+           self.assertEqual(cell.coords[1], orig_cell_coords[i][0])
 
+    def test_link_next_frame_different_images_movement(self):
+        image_1 = tifffile.imread("test/data/test_frame_4_cells.tif")
+        image_2 = tifffile.imread("test/data/test_frame_4_cells_movement_v2.tif")
+        master_cells = tracking_utils.do_watershed(image_1)
+        curr_frame = image_2
+        orig_cell_coords = []
+        for cell in master_cells:
+            for coords in cell.coords:
+                x = coords[0]
+                y = coords[1]
+                coord = [(x,y)]
+            orig_cell_coords.append(coord)
+        output = tracking_utils.link_next_frame(master_cells, curr_frame, 3)
+        self.assertEqual(len(output), 4)
+        for i, cell in enumerate(output):
+           self.assertIsInstance(cell, Cell)
+           # previous frame in output should be the same as current frame in image 1
+           self.assertEqual(cell.coords[0], orig_cell_coords[i][0])
+           # cells will now have moved
+           self.assertNotEqual(cell.coords, orig_cell_coords[i])
+    
     # synthetic images, black image with white dots in paint
     # test on same image twice in a row
     # then add a couple of dots
