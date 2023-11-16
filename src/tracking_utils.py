@@ -5,7 +5,7 @@
     * do_watershed - segments an image with watershedding
     * dist_between_points - calculates the distance between two points
     * link_cell -
-    * resolve_conflicts -
+    * resolve_child_conflicts -
     * link_next_frame - links all of the cells in a new frame to 
                         the cell lineages in the master cell list 
                         (and all previous frames)
@@ -23,7 +23,7 @@ import pandas as pd
 
 def is_pixel_inside_contour(pixel, contour):
     """
-    Checks if a pixel is inside a contour.
+    Checks if a pixel is inside a contour (is fluorescence inside a cell).
 
     Args:
         pixel: A tuple (x, y) representing the pixel's coordinates.
@@ -209,7 +209,7 @@ def get_cells_to_cull(cell_list):
     cells_to_cull = []
     positions_dict = {}
     for curr_cell in cell_list:
-        # extract position and add to positions list
+        # get most recent position
         curr_position = curr_cell.get_most_recent_coord()
         # if position is already in list, figure out which cell should be culled
         for comparison_cell in positions_dict:
@@ -224,8 +224,10 @@ def get_cells_to_cull(cell_list):
                     cells_to_cull.append(curr_cell)
                 else:
                     cells_to_cull.append(comparison_cell)
-        positions_dict[curr_cell] = curr_position
 
+        # add to positions list
+        positions_dict[curr_cell] = curr_position
+    
     cells_to_cull = set(cells_to_cull)           
     return cells_to_cull
 
