@@ -130,35 +130,82 @@ class TestCellTracking(unittest.TestCase):
     # add tests to see if more than just cell count is correct???
 
     # testing resolve_child_conflicts()
-    def test_resolve_child_conflicts(self):
-        candidates = [] # update this with more realistic list of candidates
-        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates)
+    def test_resolve_child_conflicts_empty_candidates(self):
+        candidates = []
+        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 25)
         for cell in resolved_tracks:
-            self.assertIsInstance(cell, Cell)
+            for i in cell:
+                self.assertIsInstance(i, Cell)
 
-    # these still need to be worked out:
+    def test_resolve_child_conflicts_no_conflicts(self):
+        # # make synthetic cell list to test on
+        candidates = []
+        cell_1 = Cell()
+        cell_2 = Cell()
+        cell_3 = Cell()
+        cell_4 = Cell()
+        # candidates is a numpy array of dictionaries, 
+        # keys are the cell objects, there are two, the first is the most likely cell, the second is the child cell
+    
+        candidates = [{cell_1:2,cell_4:10},{cell_2:3,cell_3:5}]
+        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 25)
+        for cell in resolved_tracks:
+            for i in cell:
+                self.assertIsInstance(i, Cell)
+        expected_output = [list([cell_1, cell_4]), list([cell_2, cell_3])]
+        self.assertEqual(expected_output[0], resolved_tracks[0])
+        self.assertEqual(expected_output[1], resolved_tracks[1])
 
-    # def test_resolve_child_conflicts_no_conflicts(self):
+    def test_resolve_child_conflicts_with_shared_child(self):     # test for if two share a child but one is closer
+        candidates = []
+        cell_1 = Cell()
+        cell_2 = Cell()
+        cell_3 = Cell()      
+        # candidates is a numpy array of dictionaries, 
+        # keys are the cell objects, there are two, the first is the most likely cell, the second is the child cell
+    
+        candidates = [{cell_1:2,cell_3:10},{cell_2:3,cell_3:5}]
+        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 25)
+        for cell in resolved_tracks:
+            for i in cell:
+                self.assertIsInstance(i, Cell)
+        expected_output = [list([cell_1]), list([cell_2, cell_3])]
+        self.assertEqual(expected_output[0], resolved_tracks[0])
+        self.assertEqual(expected_output[1], resolved_tracks[1])
+
+    def test_resolve_child_conflicts_with_potential_child_already_cell(self):
+        candidates = []
+        cell_1 = Cell()
+        cell_2 = Cell()
+        cell_3 = Cell()
+        # candidates is a numpy array of dictionaries, 
+        # keys are the cell objects, there are two, the first is the most likely cell, the second is the child cell
+    
+        candidates = [{cell_1:2,cell_2:10},{cell_2:3,cell_3:5}] # dictionary with key as cell object, value as distance from potential parent in previous frame 
+        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 25)
+        for cell in resolved_tracks:
+            for i in cell:
+                self.assertIsInstance(i, Cell)
+        expected_output = [list([cell_1]), list([cell_2, cell_3])]
+        self.assertEqual(expected_output[0], resolved_tracks[0])
+        self.assertEqual(expected_output[1], resolved_tracks[1])
+    
+    # def test_resolve_child_conflicts_with_same_child_same_dist(self): # this should pass once pull new changes
     #     candidates = []
-    #     r= tracking_utils.resolve_conflicts(candidates)
-    #     a = []
-    #     self.assertEqual(a,r)
-
-    # def test_resolve_child_conflicts_with_conflicts(self):
-    #     candidates = []
-    #     r = tracking_utils.resolve_conflicts(candidates)
-    #     a = []
-    #     self.assertEqual(a,r)
-
-    # def test_resolve_child_conflicts_empty_candidates(self):  # this isn't working
-    #     candidates = []
-    #     r = tracking_utils.resolve_child_conflicts(candidates)
-    #     for cell in r:
-    #         self.assertIsInstance(cell, Cell)
-    #     print(r)
-    #     a = np.array([], dtype=object)
-    #     self.assertEqual(a, r)
-
+    #     cell_1 = Cell()
+    #     cell_2 = Cell()
+    #     cell_3 = Cell()
+    #     # candidates is a numpy array of dictionaries, 
+    #     # keys are the cell objects, there are two, the first is the most likely cell, the second is the child cell
+    #     candidates = [{cell_1:2,cell_3:5},{cell_2:3,cell_3:5}] # dictionary with key as cell object, value as distance from potential parent in previous frame 
+    #     resolved_tracks = tracking_utils.resolve_child_conflicts(candidates)
+    #     for cell in resolved_tracks:
+    #         for i in cell:
+    #             self.assertIsInstance(i, Cell)
+    #     expected_output = [list([cell_1]), list([cell_2])]  # child should go to neither if distance is equal
+    #     self.assertEqual(expected_output[0], resolved_tracks[0])
+    #     self.assertEqual(expected_output[1], resolved_tracks[1])
+    
     # testing link_cell()
     def test_link_cell(self):
         # Create dummy cells for testing
@@ -326,6 +373,11 @@ class TestCellTracking(unittest.TestCase):
         # output = tracking_utils.link_next_frame(master_cells, curr_frame, 1)
     #    for cell in output:
     #        self.assertIsInstance(cell, Cell)
+
+    # synthetic images, black image with white dots in paint
+    # test on same image twice in a row
+    # then add a couple of dots
+    # do_watershed on first frame to get initial master cell list, then link_next_frame on second
 
 def main():
     unittest.main()
