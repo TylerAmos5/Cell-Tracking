@@ -11,6 +11,7 @@ import pandas as pd
 
 import argparse
 
+import time
 
 def get_args():
     """Collect filename for movie"
@@ -31,6 +32,7 @@ def get_args():
 
 
 def main():
+    start_time = time.time()
     args = get_args()
     nd2 = args.file_path
 
@@ -56,12 +58,14 @@ def main():
                                  cv2.NORM_MINMAX, dtype=cv2.CV_8U)
         master_cells = tracking_utils.link_next_frame(master_cells,
                                                       curr_rbg, i)
+        master_cells = tracking_utils.correct_links(master_cells)
         numcells.append(len(master_cells))
 
     dtype = [('cell', 'U10'), ('x', int), ('y', int), ('t', int)]
 
     # Create an empty array with the specified dtype
     tracks = np.empty((len(master_cells) * len(site0) + 1,), dtype=dtype)
+
 
     # Populate the 'tracks' array
     tracks['cell'][1:] = [str(i)
@@ -84,7 +88,12 @@ def main():
     df = pd.DataFrame(tracks[1:])
 
     # Save the DataFrame to a CSV file
-    df.to_csv("tracks.csv", index=False)
+    outfile_name = nd2 + "_tracks.csv"
+    df.to_csv(outfile_name, index=False)
+
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"Execution time: {execution_time} seconds")
 
 
 if __name__ == '__main__':
