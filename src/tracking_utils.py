@@ -318,7 +318,7 @@ def resolve_child_conflicts(candidates):
                 elif pot_child_cell == comp_pot_child_cell:
                     # check distances between child and two master cells
 
-                    if pot_child_dist > comp_pot_child_dist:
+                    if pot_child_dist >= comp_pot_child_dist:
                         # if child is closer to current cell,
                         # add it to resolved track
                         owns_child = False
