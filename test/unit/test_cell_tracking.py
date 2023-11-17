@@ -432,10 +432,6 @@ class TestCellTracking(unittest.TestCase):
            print(cell.coords)
            self.assertNotIn(cell.coords[1], orig_cell_coords)
 
-    # synthetic images, black image with white dots in paint
-    # test on same image twice in a row
-    # then add a couple of dots
-    # do_watershed on first frame to get initial master cell list, then link_next_frame on second
 
 def main():
     unittest.main()
