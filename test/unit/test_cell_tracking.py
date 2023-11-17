@@ -408,6 +408,30 @@ class TestCellTracking(unittest.TestCase):
            # cells will now have moved
            self.assertNotEqual(cell.coords, orig_cell_coords[i])
     
+    def test_link_next_frame_different_images_new_cell(self):
+        image_1 = tifffile.imread("test/data/test_frame_4_cells.tif")
+        image_2 = tifffile.imread("test/data/test_frame_5_cells_v2.tif")
+        master_cells = tracking_utils.do_watershed(image_1)
+        curr_frame = image_2
+        orig_cell_coords = []
+        for cell in master_cells:
+            for coords in cell.coords:
+                x = coords[0]
+                y = coords[1]
+                coord = (x,y)
+            orig_cell_coords.append(coord)
+        print("original:",orig_cell_coords)
+        output = tracking_utils.link_next_frame(master_cells, curr_frame, 3)
+        print("output:")
+        self.assertEqual(len(output), 5)  # should now be 5 tracked cells
+        for i, cell in enumerate(output):
+           self.assertIsInstance(cell, Cell)
+           # previous frame in output should be the same as current frame in image 1
+           self.assertIn(cell.coords[0], orig_cell_coords)
+           # cells will now have moved
+           print(cell.coords)
+           self.assertNotIn(cell.coords[1], orig_cell_coords)
+
     # synthetic images, black image with white dots in paint
     # test on same image twice in a row
     # then add a couple of dots
