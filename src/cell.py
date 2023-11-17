@@ -1,6 +1,8 @@
+import numpy as np
+
 class Cell:
     def __init__(self, coords=None, contours=None,
-                 parent=None, children=None, birthday=0):
+                 parent=None, children=None, birthday=0, problematic=False):
         if coords is None:
             coords = []
         if contours is None:
@@ -12,9 +14,12 @@ class Cell:
         self.contours = contours
         self.parent = parent
         self.children = children
+        self.problematic = problematic
 
         if self.parent is not None:
-            self.coords = parent.coords
+            history_length = len(parent.coords)
+            backfill = [(-1, -1) for _ in range(history_length)]
+            self.coords = backfill
 
     def add_coordinate(self, coord):
         self.coords.append(coord)
@@ -31,6 +36,12 @@ class Cell:
     def get_most_recent_coord(self):
         most_recent_coord = self.coords[len(self.coords)-1]
         return most_recent_coord
+    
+    def make_problematic_cell(self):
+        self.problematic = True
+    
+    def make_unproblematic_cell(self):
+        self.problematic = False
 
     def __str__(self):
         return f"Cell: Coords={self.coords}, Num Contours={len(self.contours)}"
