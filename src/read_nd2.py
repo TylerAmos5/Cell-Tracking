@@ -56,9 +56,13 @@ def read_nd2(nd2_filename):
                     channel_data = channel_data.transpose((1, 2, 0))
                     frame_data[f] = channel_data
                 well_data[fov] = frame_data
+    except nd2reader.exceptions.InvalidFileType:
+        print("Invalid file type: " + nd2_filename)
+        raise nd2reader.exceptions.InvalidFileType
     except FileNotFoundError:
         print("File not found: " + nd2_filename)
         well_data = None
+        raise FileNotFoundError
     return well_data
 
 
@@ -86,9 +90,14 @@ def get_channel_rawData(well_data, site, frame, channel):
     """
     try:
         return well_data[site][frame][:, :, channel]
+    except IndexError:
+        print("Invalid site/frame/channel combination: " + str(site) + "/"
+                + str(frame) + "/" + str(channel))
+        raise
     except KeyError:
         print("Invalid site/frame/channel combination: " + str(site) + "/"
                 + str(frame) + "/" + str(channel))
+        raise
 
 
 def get_frame_data(well_data, site, frame):
@@ -116,6 +125,7 @@ def get_frame_data(well_data, site, frame):
     except KeyError:
         print("Invalid site/frame combination: " + str(site) + "/"
                 + str(frame))
+        raise 
 
 
 def get_site_data(well_data, site):
@@ -140,5 +150,6 @@ def get_site_data(well_data, site):
     """
     try:
         return well_data[site]
-    except:
+    except KeyError:
         print("Invalid site: " + str(site))
+        raise
