@@ -1,9 +1,9 @@
 name: Unit and functional tests
 
 on:
+  push:
   pull_request:
-    branches:
-      - main-edit-this-once-actually-want-to-run
+    branches: [ main ]
 
 jobs:
   run_unit_tests:
@@ -17,8 +17,9 @@ jobs:
         with:
           environment-file: environment.yml
           environment-name: cell_tracking
-      - run: |
-          python test/unit/test_cell_tracking.py
+      - run: | 
+          python -m unittest test/unit/test_cell_tracking.py
+
   run_func_tests:
     defaults:
       run:
@@ -32,6 +33,7 @@ jobs:
           environment-name: cell_tracking
       - run: |
           bash test/func/test_do_tracking.sh
+
   run_style_tests:
     defaults:
       run:
