@@ -44,6 +44,11 @@ def main():
     movie = read_nd2.read_nd2(nd2)
     site0 = read_nd2.get_site_data(movie, 0)
 
+    print(len(site0))
+    frame0_nuc_channel = read_nd2.get_channel_rawData(movie, 0, 0, 0)
+    print(frame0_nuc_channel.shape)
+
+
     frame0_nuc_channel = read_nd2.get_channel_rawData(movie, 0, 0, 0)
     rgb_nuc = np.dstack((frame0_nuc_channel,
                          frame0_nuc_channel, frame0_nuc_channel))
