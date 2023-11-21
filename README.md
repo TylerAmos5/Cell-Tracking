@@ -2,9 +2,9 @@
 
 ## Description
 
-This software is designed to track individual live cells and record protein dynamics using fluorescent time-lapse microscopy data acquired by a Nikon microscope. This type of analysis is used to examine single cells’ protein dynamics as they progress through the cell cycle. In cells, we can use up to three fluorescent markers that can represent a variety of cellular processes. For example, these could be markers for cell proliferation, activation of a specific pathway, or nuclear markers. The signal from each of these markers is represented in individual non-overlapping channels, allowing for each channel to be analyzed individually or multiplexed together to provide robust information about the cells active processes. For example, this analysis might be conducted to examine the protein dynamics of proliferating cancer cells. Anti-proliferation drugs could be added to cells and then compared to untreated cells, revealing differences in signaling pathway activation in the presence of drug. 
+This software is designed to track individual live cells and record protein dynamics using fluorescent time-lapse microscopy data acquired by a Nikon microscope. This type of analysis is used to examine single cells’ protein dynamics as they progress through the cell cycle. This software is designed to handle three live-cell fluorescent markers representing a variety of cellular processes. For example, these could be markers for cell proliferation, activation of a specific pathway, or nuclear markers. The signal from each of these markers is represented in individual non-overlapping channels, allowing for each channel to be analyzed individually or multiplexed together to provide robust information about the cells active processes. For example, this analysis might be conducted to examine the protein dynamics of proliferating cancer cells. Anti-proliferation drugs could be added to cells and then compared to untreated cells, revealing differences in signaling pathway activation in the presence of drug. 
 
-This code was developed to work for ND2 files with three channels and two sites per well. Our goal is to further generalize this to accept any number of color channels and sites. Additionally, we intend to visualize single cell traces and compare fluorescence values between cells. The current code tracks single cells throughout a movie. The current output is “tracks.csv”, containing cell IDs and corresponding locations in each frame throughout the input movie. Image segmentation via watershedding is conducted on the first frame to identify nuclei to create a list of master cell IDs. Then, each frame that follows is segmented to identify nuclei and is linked to the cells identified in the previous frame. We developed a “Cell” class that stores a cell’s location in each frame, the outline of its nucleus, identities of parent and children, and the “birthday” if the cell was not present in the first frame. This helps analyze the data with single cell resolution.
+This code was developed to work for ND2 files with three channels and two sites per well. We intend to visualize single cell traces and compare fluorescence values between cells. The current code tracks single cells throughout a movie. The current output is “'filename'_tracks.csv”, containing cell IDs and corresponding locations in each frame throughout the input movie. Image segmentation via watershedding is conducted on the first frame to identify nuclei to create a list of master cell IDs. Then, each frame that follows is segmented to identify nuclei and is linked to the cells identified in the previous frame. We developed a “Cell” class that stores a cell’s location in each frame, the outline of its nucleus, identities of parent and children, and the “birthday” if the cell was not present in the first frame. This helps analyze the data with single cell resolution.
 
 ## Installation
 
@@ -23,7 +23,7 @@ This program relies on a series of packages which are detailed in the environmen
 Basic do_tracking.py usage:
 
 ```
-python src/do_tracking.py [-h] --file_path FILE_PATH
+python src/do_tracking.py [-h] --file_path FILE_PATH --output_path OUTPUT_PATH
 ```
 
 ### Files of note
@@ -36,7 +36,7 @@ Main script that calls functions from many of the other files.
 
 #### src/read_nd2.py
 
-Contains functions required for initial ND2 handling, import, and tiff conversion.
+Contains functions required for initial ND2 handling, and creates the initial data structure with movie data
 
 #### src/tracking_utils.py
 
@@ -55,7 +55,7 @@ Contains unit tests for some of the functions in tracking_utils.py. Additional t
 #### Running do_tracking.py directly with your own ND2 file:
 
 ```
-python src/do_tracking.py --file_path='/Users/tyleramos/Cell-Tracking/doc/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd2'
+python src/do_tracking.py --file_path='/Users/tyleramos/Cell-Tracking/doc/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd2' --output_path='output'
 # Please note that this file path will need to be replaced with the location of an ND2 file on your machine.
 # This repository does not currently contain any ND2 files due to the large file size.
 ```
@@ -78,7 +78,9 @@ python test/unit/test_cell_tracking.py
 
 ## Updates
 
-10/1/23: developed initial code for object detection and tracking
+
+10/1/23: developed initial code for object detection and tracking. 
+developed nd2 file I/O. 
 
 10/15/23: added first pass at conflict resolution and object-oriented code
 
@@ -93,3 +95,7 @@ python test/unit/test_cell_tracking.py
 10/30/23: snakemake workflow added
 
 11/10/23: worked on culling functions and testing framework
+
+11/14/23: track healing and culling improved
+
+11/21/23: try/except implemented
