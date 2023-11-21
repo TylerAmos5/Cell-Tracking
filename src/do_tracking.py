@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 import cv2
 import os
 import math
-import read_nd2
 from cell import Cell
 import pandas as pd
 
 import argparse
 
 import time
+
 
 def get_args():
     """Collect filename for movie"
@@ -65,7 +65,6 @@ def main():
 
     # Create an empty array with the specified dtype
     tracks = np.empty((len(master_cells) * len(site0) + 1,), dtype=dtype)
-
 
     # Populate the 'tracks' array
     tracks['cell'][1:] = [str(i)

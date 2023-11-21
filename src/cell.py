@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Cell:
     def __init__(self, coords=None, contours=None,
                  parent=None, children=None, birthday=0, problematic=False):
@@ -36,10 +37,10 @@ class Cell:
     def get_most_recent_coord(self):
         most_recent_coord = self.coords[len(self.coords)-1]
         return most_recent_coord
-    
+
     def make_problematic_cell(self):
         self.problematic = True
-    
+
     def make_unproblematic_cell(self):
         self.problematic = False
 
