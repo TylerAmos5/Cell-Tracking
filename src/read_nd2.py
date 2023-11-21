@@ -36,25 +36,29 @@ def read_nd2(nd2_filename):
                 the components of this dictionary can be accessed using:
                     well_data[site][frame][channel]
     """
-    with nd2reader.ND2Reader(nd2_filename) as nd2_movie:
-        nd2_movie.iter_axes = 'v'
-        well_data = {}
-        for fov in range(nd2_movie.sizes['v']):
-            frame_data = {}
-            nd2_movie.iter_axes = 't'
-            for f in range(nd2_movie.sizes['t']):
-                nd2_movie.iter_axes = 'c'
-                channel_data = []
-                for c in range(nd2_movie.sizes['c']):
-                    nd2_movie.default_coords['v'] = fov
-                    nd2_movie.default_coords['t'] = f
-                    nd2_movie.default_coords['c'] = c
-                    channel_data.append(nd2_movie[c])
+    try: 
+        with nd2reader.ND2Reader(nd2_filename) as nd2_movie:
+            nd2_movie.iter_axes = 'v'
+            well_data = {}
+            for fov in range(nd2_movie.sizes['v']):
+                frame_data = {}
+                nd2_movie.iter_axes = 't'
+                for f in range(nd2_movie.sizes['t']):
+                    nd2_movie.iter_axes = 'c'
+                    channel_data = []
+                    for c in range(nd2_movie.sizes['c']):
+                        nd2_movie.default_coords['v'] = fov
+                        nd2_movie.default_coords['t'] = f
+                        nd2_movie.default_coords['c'] = c
+                        channel_data.append(nd2_movie[c])
 
-                channel_data = np.array(channel_data)
-                channel_data = channel_data.transpose((1, 2, 0))
-                frame_data[f] = channel_data
-            well_data[fov] = frame_data
+                    channel_data = np.array(channel_data)
+                    channel_data = channel_data.transpose((1, 2, 0))
+                    frame_data[f] = channel_data
+                well_data[fov] = frame_data
+    except FileNotFoundError:
+        print("File not found: " + nd2_filename)
+        well_data = None
     return well_data
 
 
@@ -80,7 +84,11 @@ def get_channel_rawData(well_data, site, frame, channel):
                                             specified site/frame/channel
                                             with values for each of the pixels
     """
-    return well_data[site][frame][:, :, channel]
+    try:
+        return well_data[site][frame][:, :, channel]
+    except KeyError:
+        print("Invalid site/frame/channel combination: " + str(site) + "/"
+                + str(frame) + "/" + str(channel))
 
 
 def get_frame_data(well_data, site, frame):
@@ -103,7 +111,11 @@ def get_frame_data(well_data, site, frame):
                                 specified site/frame for all channels
                                 with values for each of the pixels
     """
-    return well_data[site][frame]
+    try:
+        return well_data[site][frame]
+    except KeyError:
+        print("Invalid site/frame combination: " + str(site) + "/"
+                + str(frame))
 
 
 def get_site_data(well_data, site):
@@ -126,4 +138,7 @@ def get_site_data(well_data, site):
                         specified site with the format
                         site --> frame[channel]
     """
-    return well_data[site]
+    try:
+        return well_data[site]
+    except:
+        print("Invalid site: " + str(site))
