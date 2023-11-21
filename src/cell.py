@@ -35,8 +35,12 @@ class Cell:
         self.parent = p
 
     def get_most_recent_coord(self):
-        most_recent_coord = self.coords[len(self.coords)-1]
-        return most_recent_coord
+        try:
+            most_recent_coord = self.coords[len(self.coords)-1]
+            return most_recent_coord
+        except IndexError:
+            print("IndexError: No coordinates found for this cell")
+            raise IndexError
 
     def make_problematic_cell(self):
         self.problematic = True
