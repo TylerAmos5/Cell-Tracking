@@ -16,7 +16,26 @@ git clone https://github.com/TylerAmos5/Cell-Tracking.git
 
 ### Setting up an environment
 
-This program relies on a series of packages which are detailed in the environment.yml file. Please install each of these dependencies before proceeding. 
+This program relies on a series of packages which are detailed in the environment.yml file. Create a new environment with the same dependencies by running the following code.
+### If you do not already have mamba installed, run the following three lines
+```
+cd $HOME
+curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-pypy3-Linuxx86_64.sh
+bash Mambaforge-pypy3-Linux-x86_64.sh.sh
+```
+Next, use mamba to create a new environment from the provided environment.yml file.
+```
+mamba env create -f environment.yml -n <your_environtment_name>
+```
+Then, you must allow mamba to activate and deactivate environments. To do this, run the following line:
+```
+mamba init
+```
+Now, you must restart your shell for the changes to take place. You can do this by quitting the terminal or closing your window. 
+Once you have reopened your shell, activate the new environment. 
+```
+mamba activate <your_environment_name>
+```
 
 ## Usage
 
@@ -55,10 +74,11 @@ Contains unit tests for some of the functions in tracking_utils.py. Additional t
 #### Running do_tracking.py directly with your own ND2 file:
 
 ```
-python src/do_tracking.py --file_path='/Users/tyleramos/Cell-Tracking/doc/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd2' --output_path='output'
-# Please note that this file path will need to be replaced with the location of an ND2 file on your machine.
-# This repository does not currently contain any ND2 files due to the large file size.
+python src/do_tracking.py --file_path='<your_path>/Cell-Tracking/doc/<your_filename>' --output_path='<your_output_path>'
 ```
+#### Replace <your_path> with the relevant path on your device
+This repository does not currently contain any ND2 files due to the large file size.
+
 
 #### Running using snakemake:
 
@@ -99,3 +119,5 @@ developed nd2 file I/O.
 11/14/23: track healing and culling improved
 
 11/21/23: try/except implemented
+
+11/23/23: environments solved
