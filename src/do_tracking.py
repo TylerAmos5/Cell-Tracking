@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import cv2
 import os
 import math
-import read_nd2
 from cell import Cell
 import pandas as pd
 
@@ -13,12 +12,13 @@ import argparse
 
 import time
 
+
 def get_args():
     """Collect filename for movie"
 
     Returns
     -------
-    args: argument input by the user for --file_path
+    args: argument input by the user for --file_path and --output_dir
     """
     parser = argparse.ArgumentParser(description='obtain ND2 file name ',
                                      prog='get_args')
@@ -26,6 +26,11 @@ def get_args():
                         type=str,
                         help='.nd2 File',
                         required=True)
+    
+    parser.add_argument('--output_path',
+                        type=str,
+                        help='Directory to write output file to',
+                        required=False)
 
     args = parser.parse_args()
     return args
@@ -39,12 +44,21 @@ def main():
     movie = read_nd2.read_nd2(nd2)
     site0 = read_nd2.get_site_data(movie, 0)
 
+    print(len(site0))
+    frame0_nuc_channel = read_nd2.get_channel_rawData(movie, 0, 0, 0)
+    print(frame0_nuc_channel.shape)
+
+
     frame0_nuc_channel = read_nd2.get_channel_rawData(movie, 0, 0, 0)
     rgb_nuc = np.dstack((frame0_nuc_channel,
                          frame0_nuc_channel, frame0_nuc_channel))
-    rgb_nuc = cv2.normalize(rgb_nuc, None, 0, 255,
-                            cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-
+    try:
+        rgb_nuc = cv2.normalize(rgb_nuc, None, 0, 255,
+                                cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    except cv2.error:
+        print("cv2.error: Could not normalize image")
+        raise cv2.error
+    
     master_cells = tracking_utils.do_watershed(rgb_nuc)
 
     # loop over remaining frames and do track linking
@@ -52,19 +66,21 @@ def main():
     for i in range(1, len(site0)):
         cur_frame_nuc = read_nd2.get_channel_rawData(movie, 0,
                                                      i, 0)
-        curr_rbg = np.dstack((cur_frame_nuc, cur_frame_nuc,
+        curr_nuc_rbg = np.dstack((cur_frame_nuc, cur_frame_nuc,
                               cur_frame_nuc))
-        curr_rbg = cv2.normalize(curr_rbg, None, 0, 255,
+        
+        curr_nuc_rbg = cv2.normalize(curr_nuc_rbg, None, 0, 255,
                                  cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+        
         master_cells = tracking_utils.link_next_frame(master_cells,
-                                                      curr_rbg, i)
+                                                      curr_nuc_rbg, i)
         master_cells = tracking_utils.correct_links(master_cells,  distance_threshold=30)
         
         if i == (len(site0)-1):
             # cull remaining problematic cells from last frame
             remaining_problematics = tracking_utils.get_all_problematics(master_cells)
             master_cells = tracking_utils.cull_duplicates(master_cells, remaining_problematics)
-            
+
         numcells.append(len(master_cells))
 
     remaining_death_row = tracking_utils.get_all_death_row(master_cells)
@@ -74,7 +90,6 @@ def main():
 
     # Create an empty array with the specified dtype
     tracks = np.empty((len(master_cells) * len(site0) + 1,), dtype=dtype)
-
 
     # Populate the 'tracks' array
     tracks['cell'][1:] = [str(i)
@@ -97,8 +112,14 @@ def main():
     df = pd.DataFrame(tracks[1:])
 
     # Save the DataFrame to a CSV file
-    outfile_name = nd2 + "_tracks.csv"
-    df.to_csv(outfile_name, index=False)
+    well_name = os.path.basename(nd2)
+    outfile_name = args.output_path + '/' + well_name + "_tracks.csv"
+    default_out = '../' + well_name + "_tracks.csv"
+    try:
+        df.to_csv(outfile_name, index=False)
+    except PermissionError:
+        print("Could not write to designated file, writing to repository root")
+        df.to_csv(default_out, index=False)
 
     end_time = time.time()
     execution_time = end_time - start_time

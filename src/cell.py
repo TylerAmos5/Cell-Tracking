@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Cell:
     def __init__(self, coords=None, contours=None,
                  parent=None, children=None, birthday=0, problematic=0):
@@ -34,12 +35,16 @@ class Cell:
         self.parent = p
 
     def get_most_recent_coord(self):
-        most_recent_coord = self.coords[len(self.coords)-1]
-        return most_recent_coord
-    
+        try:
+            most_recent_coord = self.coords[len(self.coords)-1]
+            return most_recent_coord
+        except IndexError:
+            print("IndexError: No coordinates found for this cell")
+            raise IndexError
+            
     def increment_problematic(self):
         self.problematic += 1
-    
+
     def make_unproblematic_cell(self):
         self.problematic -= 1
 

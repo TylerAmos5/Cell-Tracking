@@ -17,5 +17,6 @@ dependencies:
   - pycodestyle
   - snakemake
   - graphviz
+  - tifffile
 
 

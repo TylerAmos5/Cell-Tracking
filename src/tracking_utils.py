@@ -32,9 +32,12 @@ def is_pixel_inside_contour(pixel, contour):
     Returns:
         True if the pixel is inside the contour, False otherwise.
     """
-    x, y = pixel
-    point = (x, y)
-    return cv2.pointPolygonTest(contour, point, False) >= 0
+    try:
+        x, y = pixel
+        point = (x, y)
+        return cv2.pointPolygonTest(contour, point, False) >= 0
+    except:
+        raise ValueError("pixel must be a tuple (x, y)")
 
 
 def get_center(contour):
@@ -51,11 +54,12 @@ def get_center(contour):
     M = cv2.moments(contour)
 
     # Calculate the centroid (center) of the contour
-    if M["m00"] != 0:
+    try:    
         cx = int(M["m10"] / M["m00"])
         cy = int(M["m01"] / M["m00"])
-    else:
-        cx, cy = 0, 0  # Handle division by zero if the contour has no area
+    except ZeroDivisionError:
+        print("Contour has no area")
+        cx, cy = 0, 0 # Handle division by zero if the contour has no area 
 
     # add centroid to list of cell centers
     return ((cx, cy))
@@ -71,9 +75,12 @@ def do_watershed(img):
     Returns:
         cells: list of cells (1 for each cell)
     """
-    # img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
     # convert to grayscale
-    grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    try:
+        grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    except cv2.error:
+        print("Image not compatible with watershedding")
+        raise cv2.error
 
     # threshold image
     thresh = cv2.threshold(grayscale, 0, 255,
@@ -116,12 +123,16 @@ def do_watershed(img):
                           255, 0).astype(np.uint8)
 
         # Perform contour extraction on the created binary image
-        contours, hierarchy = cv2.findContours(
-            target, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+        contours, hierarchy = cv2.findContours(target, cv2.RETR_EXTERNAL,
+                                               cv2.CHAIN_APPROX_SIMPLE)
 
         # check if contour area is over a threshold
-        cont_area = cv2.contourArea(contours[0])
+        try:
+            cont_area = cv2.contourArea(contours[0])
+        except IndexError:
+            print("No contours found")
+            raise IndexError
+        
         area_threshold = 1000
         if cont_area > area_threshold:
             continue
@@ -147,8 +158,11 @@ def dist_between_points(coord_a, coord_b):
     Returns:
         distance: the distance between coord_a and coord_b.
     """
-    x1, y1 = coord_a
-    x2, y2 = coord_b
+    try:
+        x1, y1 = coord_a
+        x2, y2 = coord_b
+    except ValueError:
+        raise ValueError("coord_a and coord_b must be tuples (x, y)")
 
     # Calculate the Euclidean distance between the two points
     distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
@@ -173,7 +187,11 @@ def link_cell(parent_cell, curr_frame_cells):
     # initialize list of distances
     dists = {}
     for curr_cell in curr_frame_cells:
-        curr_point = curr_cell.coords[0]
+        try:
+            curr_point = curr_cell.coords[0]
+        except IndexError:
+            # not gonna kill process bc it can continue to next cells
+            print("No coordinates found") 
         # get distance from every other point
         dists[curr_cell] = dist_between_points(prev_point, curr_point)
 
@@ -222,8 +240,13 @@ def get_cells_to_cull(cell_list, dist_threshold):
             comparison_position = positions_dict[comparison_cell]
             if curr_position == comparison_position:
                 # check which cell was closer to new position
-                comparison_dist = dist_between_points(comparison_cell.coords[len(comparison_cell.coords)-2],
-                                                      comparison_position)
+
+                try:
+                    comparison_dist = dist_between_points(comparison_cell.coords[len(comparison_cell.coords)-2],
+                                                        comparison_position)
+                except IndexError:
+                    print("No coordinates found for linking")
+                    raise IndexError
                 
                 if comparison_dist < curr_dist:
                     cells_to_cull.append(curr_cell)
@@ -297,10 +320,14 @@ def resolve_child_conflicts(candidates, child_dist_thresh):
         curr_candidates = candidates[i]
         keys = list(curr_candidates.keys())
 
-        most_likely_cell = keys[0]
-        most_likely_dist = curr_candidates[most_likely_cell]
-        pot_child_cell = keys[1]
-        pot_child_dist = curr_candidates[pot_child_cell]
+        try:
+            most_likely_cell = keys[0]
+            most_likely_dist = curr_candidates[most_likely_cell]
+            pot_child_cell = keys[1]
+            pot_child_dist = curr_candidates[pot_child_cell]
+        except IndexError:
+            print("Candidates missing")
+            raise IndexError
 
         # check that any potential child is within threshold
         # if not, because original most likely distance is within threshold,
@@ -313,13 +340,15 @@ def resolve_child_conflicts(candidates, child_dist_thresh):
             owns_child = True
 
             for comparison_candidates in candidates:
-
-                comparison_keys = list(comparison_candidates.keys())
-
-                comp_most_likely_cell = comparison_keys[0]
-                comp_pot_child_cell = comparison_keys[1]
-                comp_pot_child_dist = comparison_candidates[comp_pot_child_cell]
-
+                try:
+                    comparison_keys = list(comparison_candidates.keys())
+                    comp_most_likely_cell = comparison_keys[0]
+                    comp_pot_child_cell = comparison_keys[1]
+                    comp_pot_child_dist = comparison_candidates[comp_pot_child_cell]
+                except IndexError:
+                    print("Candidates missing")
+                    raise IndexError
+                
                 if pot_child_cell == comp_most_likely_cell:
                     owns_child = False
                     # resolved_tracks[i] = [most_likely_cell]
@@ -417,7 +446,12 @@ def link_next_frame(master_cell_list, curr_frame, frame_num):
 #     Returns:
 #         corrected_cell_list (list): A modified list of cell objects after culling problematic cells.
 #     """
-#     problematic_cells = get_cells_to_cull(cell_list)
+#     try:
+#         problematic_cells = get_cells_to_cull(cell_list)
+#     except IndexError:
+#         print("cell list is empty")
+#         raise IndexError
+    
 #     if problematic_cells is not None:
 #         corrected_cell_list = cull_duplicates(cell_list, problematic_cells)
 #     else:
