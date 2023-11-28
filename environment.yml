@@ -17,6 +17,11 @@ dependencies:
   - pycodestyle
   - snakemake
   - graphviz
-  - tifffile
-
+  - wget
+  - imagecodecs
+  - pip:
+      - imageio
+      - opencv-python
+      - pims
+      - slicerator
 
