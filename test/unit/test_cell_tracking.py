@@ -16,7 +16,7 @@ class TestCellTracking(unittest.TestCase):
     
     # testing read_nd2()
     def test_readND2(self):
-        movie = read_nd2.read_nd2("test/data/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd2")
+        movie = read_nd2.read_nd2("doc/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd2")
         site0 = read_nd2.get_site_data(movie, 0)
         frame0_nuc_channel = read_nd2.get_channel_rawData(movie, 0, 0, 0)
 
@@ -24,7 +24,7 @@ class TestCellTracking(unittest.TestCase):
         self.assertEqual(frame0_nuc_channel.shape, (2048, 2044))
 
     def test_readND2_bad_access(self):
-        movie = read_nd2.read_nd2("test/data/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd2")
+        movie = read_nd2.read_nd2("doc/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd2")
         with self.assertRaises(KeyError):
             read_nd2.get_site_data(movie, 2)
         with self.assertRaises(IndexError):
@@ -32,10 +32,10 @@ class TestCellTracking(unittest.TestCase):
 
     def test_readND2_bad_file(self):
         with self.assertRaises(read_nd2.nd2reader.exceptions.InvalidFileType):
-            read_nd2.read_nd2("test/data/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd")
+            read_nd2.read_nd2("doc/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd")
 
         with self.assertRaises(FileNotFoundError):
-            read_nd2.read_nd2("test/data/fake.nd2")
+            read_nd2.read_nd2("doc/fake.nd2")
 
     # testing get_center()
     def test_get_center_output_type(self):
