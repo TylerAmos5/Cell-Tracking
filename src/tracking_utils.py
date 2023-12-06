@@ -69,7 +69,7 @@ def do_watershed(movie, frame_num):
     Segments an image with watershedding.
 
     Args:
-        img: image to segment
+        movie: movie to segment
 
     Returns:
         cells: list of cells (1 for each cell)
