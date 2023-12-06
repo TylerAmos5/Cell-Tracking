@@ -114,7 +114,7 @@ def main():
         group['t_in_hours'] = group['t'] * 15 / 60
         # Plot the 't' column on the x-axis and 'channel3_avg' on the y-axis for each cell ID
         plt.figure()
-        group.plot(x='t_in_hours', y='channel3_avg', kind='line', color='green')
+        group.plot(x='t_in_hours', y='channel3_avg', kind='line', color='green', label='mTOR activity')
         plt.title(f'Cell ID: {cell_ID}')
         plt.xlabel('Time (hours)')
         plt.ylabel('1 / mVenus median (pixel intensity)')
