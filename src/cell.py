@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Cell:
-    def __init__(self, coords=None, contours=None, channel3_avg=None,
+    def __init__(self, coords=None, contours=None, channel2_ratio=None, channel3_avg=None,
                  parent=None, children=None, birthday=0, problematic=0):
         if coords is None:
             coords = []
@@ -12,6 +12,8 @@ class Cell:
             children = []
         if channel3_avg is None:
             channel3_avg = []
+        if channel2_ratio is None:
+            channel2_ratio = []
         self.birthday = birthday
         self.coords = coords
         self.contours = contours
@@ -19,6 +21,7 @@ class Cell:
         self.children = children
         self.problematic = problematic
         self.channel3_avg = channel3_avg
+        self.channel2_ratio = channel2_ratio
 
         if self.parent is not None:
             history_length = len(parent.coords)
@@ -33,6 +36,9 @@ class Cell:
 
     def add_channel3_avg(self, avg):
         self.channel3_avg.append(avg)
+    
+    def add_channel2_ratio(self, ratio):
+        self.channel2_ratio.append(ratio)
 
     def add_child(self, child):
         self.children.append(child)
