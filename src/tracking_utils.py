@@ -58,14 +58,13 @@ def get_center(contour):
         cx = int(M["m10"] / M["m00"])
         cy = int(M["m01"] / M["m00"])
     except ZeroDivisionError:
-        print("Contour has no area")
         cx, cy = 0, 0 # Handle division by zero if the contour has no area 
 
     # add centroid to list of cell centers
     return ((cx, cy))
 
 
-def do_watershed(img):
+def do_watershed(movie, frame_num):
     """
     Segments an image with watershedding.
 
@@ -75,9 +74,19 @@ def do_watershed(img):
     Returns:
         cells: list of cells (1 for each cell)
     """
+    channel0_data = read_nd2.get_channel_rawData(movie, 0, frame_num, 0)
+    rgb_nuc = np.dstack((channel0_data,
+                         channel0_data, channel0_data))
+    try:
+        rgb_nuc = cv2.normalize(rgb_nuc, None, 0, 255,
+                                cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    except cv2.error:
+        print("cv2.error: Could not normalize image")
+        raise cv2.error
+    
     # convert to grayscale
     try:
-        grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        grayscale = cv2.cvtColor(rgb_nuc, cv2.COLOR_BGR2GRAY)
     except cv2.error:
         print("Image not compatible with watershedding")
         raise cv2.error
@@ -110,7 +119,7 @@ def do_watershed(img):
     markers[unknown == 255] = 0
 
     # apply watershed algorithm
-    markers = cv2.watershed(img, markers)
+    markers = cv2.watershed(rgb_nuc, markers)
 
     labels = np.unique(markers)
 
@@ -139,12 +148,33 @@ def do_watershed(img):
         else:
             center = get_center(contours[0])
             cont_rect = cv2.boundingRect(contours[0])
+            mVenus_avg = get_channel_data_within_contour(movie, frame_num, cont_rect, channel=2)
             curr_cell = Cell()
             curr_cell.add_coordinate(center)
             curr_cell.add_contour(cont_rect)
+            curr_cell.add_channel3_avg(mVenus_avg)
             cells.append(curr_cell)
 
     return cells
+
+
+def get_channel_data_within_contour(movie, frame_num, contour, channel):
+    """
+    doc string
+    """
+    # get desired channel raw data
+    frame_data = read_nd2.get_frame_data(movie, 0, frame_num)
+    
+    # get bounding rectangle
+    x, y, w, h = contour
+    
+    # get channel data from rectangle
+    roi = frame_data[y:y+h, x:x+w, channel]
+    
+    # compute average pixel value within contour
+    average_pixel_val = roi.mean()
+
+    return average_pixel_val
 
 
 def dist_between_points(coord_a, coord_b):
@@ -369,7 +399,7 @@ def resolve_child_conflicts(candidates, child_dist_thresh):
     return resolved_tracks
 
 
-def link_next_frame(master_cell_list, curr_frame, frame_num):
+def link_next_frame(master_cell_list, movie, frame_num):
     """
     Links all of the cells in a new frame to the cell
     lineages in the master cell list (and all previous frames).
@@ -386,7 +416,7 @@ def link_next_frame(master_cell_list, curr_frame, frame_num):
         new_cells: updated list of cells based on new data
     """
     # get all the cells in the current frame
-    curr_frame_cells = do_watershed(curr_frame)
+    curr_frame_cells = do_watershed(movie, frame_num)
 
     # check cells against previous frame
     candidates = np.empty(len(master_cell_list), dtype=object)
@@ -415,6 +445,7 @@ def link_next_frame(master_cell_list, curr_frame, frame_num):
             # add coord and contour from closest cell to master cell object
             curr_cell.add_coordinate(resolved_tracks[i][0].coords[0])
             curr_cell.add_contour(resolved_tracks[i][0].contours[0])
+            curr_cell.add_channel3_avg(resolved_tracks[i][0].channel3_avg[0])
             new_cells.append(curr_cell)
         elif len(resolved_tracks[i]) == 2:
             # create new cell in master list with parent history
@@ -423,6 +454,7 @@ def link_next_frame(master_cell_list, curr_frame, frame_num):
             # give child its tracking
             new_cell.add_coordinate(resolved_tracks[i][1].coords[0])
             new_cell.add_contour(resolved_tracks[i][1].contours[0])
+            new_cell.add_channel3_avg(resolved_tracks[i][1].channel3_avg[0])
             new_cells.append(new_cell)
 
             # give parent its child
@@ -430,6 +462,7 @@ def link_next_frame(master_cell_list, curr_frame, frame_num):
             # give parent its tracking info
             curr_cell.add_coordinate(resolved_tracks[i][0].coords[0])
             curr_cell.add_contour(resolved_tracks[i][0].contours[0])
+            curr_cell.add_channel3_avg(resolved_tracks[i][0].channel3_avg[0])
             new_cells.append(curr_cell)
 
     # add newborn cells to master cell list

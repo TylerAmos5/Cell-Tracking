@@ -43,23 +43,19 @@ def main():
 
     movie = read_nd2.read_nd2(nd2)
     site0 = read_nd2.get_site_data(movie, 0)
-
-    print(len(site0))
-    frame0_nuc_channel = read_nd2.get_channel_rawData(movie, 0, 0, 0)
-    print(frame0_nuc_channel.shape)
-
-
-    frame0_nuc_channel = read_nd2.get_channel_rawData(movie, 0, 0, 0)
-    rgb_nuc = np.dstack((frame0_nuc_channel,
-                         frame0_nuc_channel, frame0_nuc_channel))
-    try:
-        rgb_nuc = cv2.normalize(rgb_nuc, None, 0, 255,
-                                cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-    except cv2.error:
-        print("cv2.error: Could not normalize image")
-        raise cv2.error
+    #frame0 = read_nd2.get_frame_data(movie, 0, 0)
+    #frame0_nuc_channel = read_nd2.get_channel_rawData(movie, 0, 0, 0)
+   
+    # rgb_nuc = np.dstack((frame0,
+    #                      frame0, frame0))
+    # try:
+    #     rgb_nuc = cv2.normalize(rgb_nuc, None, 0, 255,
+    #                             cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+    # except cv2.error:
+    #     print("cv2.error: Could not normalize image")
+    #     raise cv2.error
     
-    master_cells = tracking_utils.do_watershed(rgb_nuc)
+    master_cells = tracking_utils.do_watershed(movie, 0)
 
     # loop over remaining frames and do track linking
     numcells = []
@@ -73,7 +69,7 @@ def main():
                                  cv2.NORM_MINMAX, dtype=cv2.CV_8U)
         
         master_cells = tracking_utils.link_next_frame(master_cells,
-                                                      curr_nuc_rbg, i)
+                                                      movie, i)
         master_cells = tracking_utils.correct_links(master_cells,  distance_threshold=30)
         
         if i == (len(site0)-1):
@@ -86,7 +82,7 @@ def main():
     remaining_death_row = tracking_utils.get_all_death_row(master_cells)
     print(remaining_death_row)
 
-    dtype = [('cell', 'U10'), ('x', int), ('y', int), ('t', int)]
+    dtype = [('cell', 'U10'), ('x', int), ('y', int), ('t', int), ('channel3_avg', float)]
 
     # Create an empty array with the specified dtype
     tracks = np.empty((len(master_cells) * len(site0) + 1,), dtype=dtype)
@@ -107,13 +103,34 @@ def main():
     tracks['t'][1:] = [j
                        for _ in range(len(master_cells))
                        for j in range(len(site0))]
+    
+    tracks['channel3_avg'][1:] = [master_cells[i].channel3_avg[j]
+                                  for i in range(len(master_cells))
+                                  for j in range(len(site0))]
 
     # Convert the structured numpy array to a Pandas DataFrame
     df = pd.DataFrame(tracks[1:])
 
+    # plot individual channel data for each cell
+    cell_IDs = df.groupby('cell')
+    plots_dir = "cell_plots"
+    os.makedirs("output" + "/" + plots_dir, exist_ok=True)
+
+    # Iterate over each group
+    for cell_ID, group in cell_IDs:
+        # Plot the 't' column on the x-axis and 'channel3_avg' on the y-axis for each cell ID
+        plt.figure()
+        group.plot(x='t', y='channel3_avg', kind='line', color='green')
+        plt.title(f'Cell ID: {cell_ID}')
+        plt.xlabel('Frame')
+        plt.ylabel('mVenus Avg (pixel intensity)')
+        plt.savefig(f'{args.output_path}/{plots_dir}/Cell_{cell_ID}.png')
+        plt.close('all')    
+    
     # Save the DataFrame to a CSV file
     well_name = os.path.basename(nd2)
     outfile_name = args.output_path + '/' + well_name + "_tracks.csv"
+    outfile_name = outfile_name.replace('.nd2', '')
     default_out = '../' + well_name + "_tracks.csv"
     try:
         df.to_csv(outfile_name, index=False)
