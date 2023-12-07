@@ -794,6 +794,12 @@ class TestCellTracking(unittest.TestCase):
         for coord in new_coords_list:
             self.assertIn(coord, previous_coord_list_out)
 
+    # test get_channel_data_within_nuc_contour()
+    # def test_get_channel_data_within_nuc_contour(self):
+    #     output = tracking_utils.get_channel_data_within_nuc_contour()
+    
+    # test get_channel_data_nuc_cyto_ratio()
+
 
 def main():
     unittest.main()
