@@ -36,7 +36,7 @@ def read_nd2(nd2_filename):
                 the components of this dictionary can be accessed using:
                     well_data[site][frame][channel]
     """
-    try: 
+    try:
         with nd2reader.ND2Reader(nd2_filename) as nd2_movie:
             nd2_movie.iter_axes = 'v'
             well_data = {}
@@ -92,11 +92,11 @@ def get_channel_rawData(well_data, site, frame, channel):
         return well_data[site][frame][:, :, channel]
     except IndexError:
         print("Invalid site/frame/channel combination: " + str(site) + "/"
-                + str(frame) + "/" + str(channel))
+              + str(frame) + "/" + str(channel))
         raise
     except KeyError:
         print("Invalid site/frame/channel combination: " + str(site) + "/"
-                + str(frame) + "/" + str(channel))
+              + str(frame) + "/" + str(channel))
         raise
 
 
@@ -124,8 +124,8 @@ def get_frame_data(well_data, site, frame):
         return well_data[site][frame]
     except KeyError:
         print("Invalid site/frame combination: " + str(site) + "/"
-                + str(frame))
-        raise 
+              + str(frame))
+        raise KeyError
 
 
 def get_site_data(well_data, site):

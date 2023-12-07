@@ -37,6 +37,27 @@ Once you have reopened your shell, activate the new environment.
 mamba activate <your_environment_name>
 ```
 
+## Accessing the test data file using LFS
+### Install git large file storage (lfs)
+#### Windows
+If you have a Windows machine, git lfs should already be installed as a part of "git for windows"
+
+#### Mac
+If you have a Mac, you must install git lfs. 
+If you have homebrew installed, run the following:
+```
+brew install git-lfs
+```
+If you do not have homebrew, visit this site and download the installation helper. 
+https://git-lfs.com/
+
+#### Accessing the test file
+To download the test file as an example run before trying on your own data, run the following:
+```
+git lfs install
+git lfs pull
+```
+
 ## Usage
 
 Basic do_tracking.py usage:
@@ -44,6 +65,27 @@ Basic do_tracking.py usage:
 ```
 python src/do_tracking.py [-h] --file_path FILE_PATH --output_path OUTPUT_PATH
 ```
+
+### Specifying additional parameters
+```
+--time_step
+```
+Use this parameter to specify how many minutes are between frames. The program will convert time time to hours
+If this parameter is not defined, the program will plot frames on the x-axis
+
+```
+--drug_time
+```
+Use this paramter to specify what time drug was added to the cells in your experiment.
+A vertical dotted line will be added on the plot to indicate when the drug was added.
+
+```
+--make_channel2_plots
+--make_channel3_plots
+```
+Set these to false if you do not want to produce fluorescence graphs for each cell.
+The default is True. 
+
 
 ### Files of note
 
@@ -64,6 +106,11 @@ Contains functions required for cell tracking.
 #### src/cell.py
 
 Defines the cell object class.
+
+#### src/plots.py
+Generates dataframe containing location and fluorescent values for each cell.
+This will also generate fluorecence plots for each cell if --make_channel(2/3)_plots is set to true.
+
 
 #### test/unit/test_cell_tracking.py
 

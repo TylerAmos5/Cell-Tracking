@@ -2,8 +2,8 @@ import numpy as np
 
 
 class Cell:
-    def __init__(self, coords=None, contours=None, channel2_ratio=None,
-                 channel3_avg=None, parent=None, children=None,
+    def __init__(self, coords=None, contours=None, channel2_data=None,
+                 channel3_data=None, parent=None, children=None,
                  birthday=0, problematic=0):
         if coords is None:
             coords = []
@@ -11,9 +11,9 @@ class Cell:
             contours = []
         if children is None:
             children = []
-        if channel3_avg is None:
+        if channel3_data is None:
             channel3_avg = []
-        if channel2_ratio is None:
+        if channel2_data is None:
             channel2_ratio = []
         self.birthday = birthday
         self.coords = coords
@@ -21,8 +21,8 @@ class Cell:
         self.parent = parent
         self.children = children
         self.problematic = problematic
-        self.channel3_avg = channel3_avg
-        self.channel2_ratio = channel2_ratio
+        self.channel3_data = channel3_avg
+        self.channel2_data = channel2_ratio
 
         if self.parent is not None:
             history_length = len(parent.coords)
@@ -35,11 +35,11 @@ class Cell:
     def add_contour(self, contour):
         self.contours.append(contour)
 
-    def add_channel3_avg(self, avg):
-        self.channel3_avg.append(avg)
+    def add_channel3_data(self, avg):
+        self.channel3_data.append(avg)
 
-    def add_channel2_ratio(self, ratio):
-        self.channel2_ratio.append(ratio)
+    def add_channel2_data(self, ratio):
+        self.channel2_data.append(ratio)
 
     def add_child(self, child):
         self.children.append(child)
