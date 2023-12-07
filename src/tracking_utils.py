@@ -6,8 +6,8 @@
     * dist_between_points - calculates the distance between two points
     * link_cell -
     * resolve_child_conflicts -
-    * link_next_frame - links all of the cells in a new frame to 
-                        the cell lineages in the master cell list 
+    * link_next_frame - links all of the cells in a new frame to
+                        the cell lineages in the master cell list
                         (and all previous frames)
 """
 
@@ -36,7 +36,7 @@ def is_pixel_inside_contour(pixel, contour):
         x, y = pixel
         point = (x, y)
         return cv2.pointPolygonTest(contour, point, False) >= 0
-    except:
+    except ValueError:
         raise ValueError("pixel must be a tuple (x, y)")
 
 
@@ -54,11 +54,11 @@ def get_center(contour):
     M = cv2.moments(contour)
 
     # Calculate the centroid (center) of the contour
-    try:    
+    try:
         cx = int(M["m10"] / M["m00"])
         cy = int(M["m01"] / M["m00"])
     except ZeroDivisionError:
-        cx, cy = 0, 0 # Handle division by zero if the contour has no area 
+        cx, cy = 0, 0  # Handle division by zero if the contour has no area
 
     # add centroid to list of cell centers
     return ((cx, cy))
@@ -83,7 +83,7 @@ def do_watershed(frame):
     except cv2.error:
         print("cv2.error: Could not normalize image")
         raise cv2.error
-    
+
     # convert to grayscale
     try:
         grayscale = cv2.cvtColor(rgb_nuc, cv2.COLOR_BGR2GRAY)
@@ -141,15 +141,17 @@ def do_watershed(frame):
         except IndexError:
             print("No contours found")
             raise IndexError
-        
+
         area_threshold = 1000
         if cont_area > area_threshold:
             continue
         else:
             center = get_center(contours[0])
             cont_rect = cv2.boundingRect(contours[0])
-            mVenus_avg = get_channel_data_within_contour(frame, cont_rect, channel=2)
-            cdk2_cyto_nuc_ratio = get_channel_data_nuc_cyto_ratio(frame, cont_rect, channel=1)
+            mVenus_avg = get_channel_data_within_contour(
+                         frame, cont_rect, channel=2)
+            cdk2_cyto_nuc_ratio = get_channel_data_nuc_cyto_ratio(
+                                  frame, cont_rect, channel=1)
             curr_cell = Cell()
             curr_cell.add_coordinate(center)
             curr_cell.add_contour(cont_rect)
@@ -167,41 +169,52 @@ def get_channel_data_within_contour(frame, contour, channel):
     frame_channel_data = frame[:, :, channel]
     # get bounding rectangle
     x, y, w, h = contour
-    
+
     # get channel data from rectangle
     roi = frame_channel_data[y:y+h, x:x+w]
-    
+
     # compute average pixel value within contour
     average_pixel_val = roi.mean()
-    inv_average_pixel_val = 1/average_pixel_val if average_pixel_val != 0 else 0
+    if average_pixel_val != 0:
+        inv_average_pixel_val = 1/average_pixel_val
+    else:
+        0
 
     return inv_average_pixel_val
+
 
 def get_channel_data_nuc_cyto_ratio(frame, contour, channel):
     """
     doc string
     """
     frame_channel_data = frame[:, :, channel]
-    
+
     # Assuming 'frame' is your image and 'rect' is your bounding rectangle
     x, y, w, h = contour
     padding = 5
-    x_ext, y_ext, w_ext, h_ext = x - padding, y - padding, w + 2 * padding, h + 2 * padding
-
+    x_ext, y_ext = x - padding, y - padding
+    w_ext, h_ext = w + 2 * padding, h + 2 * padding
     # Handle boundary conditions
     x_ext, y_ext = max(0, x_ext), max(0, y_ext)
-    w_ext, h_ext = min(frame_channel_data.shape[1] - x_ext, w_ext), min(frame_channel_data.shape[0] - y_ext, h_ext)
+    w_ext, h_ext = min(frame_channel_data.shape[1] - x_ext, w_ext), min(
+                   frame_channel_data.shape[0] - y_ext, h_ext)
 
     # Create masks for original and extended rectangles
     mask_orig = np.zeros(frame_channel_data.shape, dtype="uint8")
     mask_ext = np.zeros(frame_channel_data.shape, dtype="uint8")
     cv2.rectangle(mask_orig, (x, y), (x + w, y + h), 255, -1)
-    cv2.rectangle(mask_ext, (x_ext, y_ext), (x_ext + w_ext, y_ext + h_ext), 255, -1)
+    cv2.rectangle(mask_ext, (x_ext, y_ext),
+                  (x_ext + w_ext, y_ext + h_ext),
+                  255, -1)
 
     # Apply masks to channel 1 and calculate average pixel values
-    roi_orig = cv2.bitwise_and(frame_channel_data, frame_channel_data, mask=mask_orig)
-    roi_ext = cv2.bitwise_and(frame_channel_data, frame_channel_data, mask=mask_ext)
-    
+    roi_orig = cv2.bitwise_and(frame_channel_data,
+                               frame_channel_data,
+                               mask=mask_orig)
+    roi_ext = cv2.bitwise_and(frame_channel_data,
+                              frame_channel_data,
+                              mask=mask_ext)
+
     # Convert the ROI to a one-dimensional array
     flat_roi_orig = roi_orig[mask_orig == 255].flatten()
     flat_roi_ext = roi_ext[mask_ext == 255].flatten()
@@ -210,7 +223,11 @@ def get_channel_data_nuc_cyto_ratio(frame, contour, channel):
     median_pixel_value_ext = np.median(flat_roi_ext)
 
     # Calculate the ratio of the average pixel values
-    ratio = median_pixel_value_ext / median_pixel_value_orig if median_pixel_value_orig != 0 else 0
+    if median_pixel_value_orig != 0:
+        ratio = median_pixel_value_ext / median_pixel_value_orig
+    else:
+        ratio = 0
+
     return ratio
 
 
@@ -238,7 +255,7 @@ def dist_between_points(coord_a, coord_b):
 
 def link_cell(parent_cell, curr_frame_cells):
     """
-    Links a parent cell (cell from the previous frame) to two 
+    Links a parent cell (cell from the previous frame) to two
     cells in the current frame based on closest proximity.
 
     Args:
@@ -246,8 +263,10 @@ def link_cell(parent_cell, curr_frame_cells):
         curr_frame_cells: A list of all cells in the current (newest) frame.
 
     Returns:
-        output (dict): A dictionary containing the two cells in the current frame
-        closest to the parent cell and their corresponding distances from the parent cell.
+        output (dict): A dictionary containing the
+        two cells in the current frame
+        closest to the parent cell and their corresponding
+        distances from the parent cell.
     """
     # get most recent coordinate of cell from dictionary
     prev_point = parent_cell.get_most_recent_coord()
@@ -258,7 +277,7 @@ def link_cell(parent_cell, curr_frame_cells):
             curr_point = curr_cell.coords[0]
         except IndexError:
             # not gonna kill process bc it can continue to next cells
-            print("No coordinates found") 
+            print("No coordinates found")
         # get distance from every other point
         dists[curr_cell] = dist_between_points(prev_point, curr_point)
 
@@ -278,12 +297,13 @@ def link_cell(parent_cell, curr_frame_cells):
     output[closest_cells[1]] = curr_smallest_dists[1]
     return output
 
+
 def get_cells_to_cull(cell_list, dist_threshold):
     """
     Checks if any cells share a position in the most recent frame,
     and decides which cells should be culled based on distance between
     their two most recent coordinates.
-    
+
     Args:
         cell_list (list): A list of cell objects.
 
@@ -297,11 +317,13 @@ def get_cells_to_cull(cell_list, dist_threshold):
         # get most recent position
         curr_position = curr_cell.get_most_recent_coord()
         # get distance between two most recent coords
-        curr_dist = dist_between_points(curr_cell.coords[len(curr_cell.coords)-2],
-                                                      curr_position)
+        curr_dist = dist_between_points(curr_cell.coords[
+                                        len(curr_cell.coords)-2],
+                                        curr_position)
 
         is_duplicate = False
-        # if position is already in list, figure out which cell should be culled
+        # if position is already in list,
+        # figure out which cell should be culled
         for comparison_cell in positions_dict:
             # FIRST, get cells to cull based on duplicates
             comparison_position = positions_dict[comparison_cell]
@@ -309,12 +331,14 @@ def get_cells_to_cull(cell_list, dist_threshold):
                 # check which cell was closer to new position
 
                 try:
-                    comparison_dist = dist_between_points(comparison_cell.coords[len(comparison_cell.coords)-2],
-                                                        comparison_position)
+                    comparison_dist = dist_between_points(
+                                      comparison_cell.coords[
+                                            len(comparison_cell.coords)-2],
+                                      comparison_position)
                 except IndexError:
                     print("No coordinates found for linking")
                     raise IndexError
-                
+
                 if comparison_dist < curr_dist:
                     cells_to_cull.append(curr_cell)
                     is_duplicate = True
@@ -322,27 +346,31 @@ def get_cells_to_cull(cell_list, dist_threshold):
                     cells_to_cull.append(comparison_cell)
         # SECOND, get cells to cull based on big jumps
         if not is_duplicate:
-            # check if current position is over a threshold from previous position
+            # check if current position is over a
+            # threshold from previous position
             if curr_dist > dist_threshold:
                 cells_to_cull.append(curr_cell)
 
         # add to positions list
         positions_dict[curr_cell] = curr_position
-    
-    cells_to_cull = set(cells_to_cull)           
+
+    cells_to_cull = set(cells_to_cull)
     return cells_to_cull
 
 
 def cull_duplicates(cell_list, problematic_cells):
     """
-    Removes a given subset of cells (here, problematic cells) from a list of cells.
+    Removes a given subset of cells (here, problematic cells)
+        from a list of cells.
 
     Args:
         cell_list (list): A list of cell objects.
-        problematic_cells (list): A list of cell objects to be removed from cell list.
+        problematic_cells (list): A list of cell objects
+            to be removed from cell list.
 
     Returns:
-        resolved_tracks: A list of all cells in cell list that are not in problematic_cells.
+        resolved_tracks: A list of all cells in cell
+            list that are not in problematic_cells.
     """
 
     culled_set = set(cell_list).difference(set(problematic_cells))
@@ -353,30 +381,33 @@ def cull_duplicates(cell_list, problematic_cells):
 
 def resolve_child_conflicts(candidates, child_dist_thresh):
     """
-    Ensures that each child only has one parent. Checks if new cell and possible
-    child tracks are plausible (i.e. below a certain distance threshold). Matches 
-    each child to its most likely parent based on proximity, and drops other possible parents.
+    Ensures that each child only has one parent.
+    Checks if new cell and possible child tracks
+    are plausible (i.e. below a certain distance threshold).
+    Matches each child to its most likely parent based on proximity,
+    and drops other possible parents.
 
     Args:
-        candidates: A list with len(master_cell_list) where each entry is a 
-                    dictionary with two values. Each dictionary entry has a 
-                    key (a cell) and a value (the distance of that cell from 
-                    the cell with a corresponding index in the master cell list).
+        candidates: A list with len(master_cell_list) where each entry is a
+            dictionary with two values. Each dictionary entry has a
+            key (a cell) and a value (the distance of that cell from
+            the cell with a corresponding index in the master cell list).
         child_dist_thresh (int): The maximum distance between the parent cell
-                    and possible child cell such that the child cell can be assigned to
-                    that parent.
+            and possible child cell such that the child cell can be assigned to
+            that parent.
 
     Returns:
-        resolved_tracks: A list with same length as candidates list, where each entry
-                         is a list of length 0, 1, or 2. 
-                         - If length is 0, the cell with corresponding index in the
-                           master cell list should be culled.
-                         - If length is 1, it contains a cell object which should be 
-                           matched to the cell with corresponding index in the master cell list. 
-                         - If length is 2, it contains 2 cell objects: that cell 
-                           object to be matched, as well as a "newborn" child cell to be 
-                           added to the master cell list with its parent being matched 
-                           to the cell with corresponding index in the master cell list.
+        resolved_tracks: A list with same length as candidates list,
+                         where each entry
+                         is a list of length 0, 1, or 2.
+        - If length is 0, the cell with corresponding index in the
+        master cell list should be culled.
+        - If length is 1, it contains a cell object which should be
+        matched to the cell with corresponding index in the master cell list.
+        - If length is 2, it contains 2 cell objects: that cell
+        object to be matched, as well as a "newborn" child cell to be
+        added to the master cell list with its parent being matched
+        to the cell with corresponding index in the master cell list.
     """
     # loop over candidates
     # print(candidates.shape)
@@ -411,11 +442,12 @@ def resolve_child_conflicts(candidates, child_dist_thresh):
                     comparison_keys = list(comparison_candidates.keys())
                     comp_most_likely_cell = comparison_keys[0]
                     comp_pot_child_cell = comparison_keys[1]
-                    comp_pot_child_dist = comparison_candidates[comp_pot_child_cell]
+                    comp_pot_child_dist = comparison_candidates[
+                                          comp_pot_child_cell]
                 except IndexError:
                     print("Candidates missing")
                     raise IndexError
-                
+
                 if pot_child_cell == comp_most_likely_cell:
                     owns_child = False
                     # resolved_tracks[i] = [most_likely_cell]
@@ -427,7 +459,7 @@ def resolve_child_conflicts(candidates, child_dist_thresh):
                         # if child is closer to current cell,
                         # add it to resolved track
                         owns_child = False
-                        
+
             if owns_child is True:
                 resolved_tracks[i] = [most_likely_cell, pot_child_cell]
             else:
@@ -453,7 +485,7 @@ def link_next_frame(master_cell_list, frame, frame_num):
         new_cells: updated list of cells based on new data
     """
     # get all the cells in the current frame
-    
+
     curr_frame_cells = do_watershed(frame)
 
     # check cells against previous frame
@@ -484,7 +516,8 @@ def link_next_frame(master_cell_list, frame, frame_num):
             curr_cell.add_coordinate(resolved_tracks[i][0].coords[0])
             curr_cell.add_contour(resolved_tracks[i][0].contours[0])
             curr_cell.add_channel3_avg(resolved_tracks[i][0].channel3_avg[0])
-            curr_cell.add_channel2_ratio(resolved_tracks[i][0].channel2_ratio[0])
+            curr_cell.add_channel2_ratio(
+                    resolved_tracks[i][0].channel2_ratio[0])
             new_cells.append(curr_cell)
         elif len(resolved_tracks[i]) == 2:
             # create new cell in master list with parent history
@@ -494,7 +527,8 @@ def link_next_frame(master_cell_list, frame, frame_num):
             new_cell.add_coordinate(resolved_tracks[i][1].coords[0])
             new_cell.add_contour(resolved_tracks[i][1].contours[0])
             new_cell.add_channel3_avg(resolved_tracks[i][1].channel3_avg[0])
-            new_cell.add_channel2_ratio(resolved_tracks[i][1].channel2_ratio[0])
+            new_cell.add_channel2_ratio(
+                    resolved_tracks[i][1].channel2_ratio[0])
             new_cells.append(new_cell)
 
             # give parent its child
@@ -503,7 +537,8 @@ def link_next_frame(master_cell_list, frame, frame_num):
             curr_cell.add_coordinate(resolved_tracks[i][0].coords[0])
             curr_cell.add_contour(resolved_tracks[i][0].contours[0])
             curr_cell.add_channel3_avg(resolved_tracks[i][0].channel3_avg[0])
-            curr_cell.add_channel2_ratio(resolved_tracks[i][0].channel2_ratio[0])
+            curr_cell.add_channel2_ratio(
+                    resolved_tracks[i][0].channel2_ratio[0])
             new_cells.append(curr_cell)
 
     # add newborn cells to master cell list
@@ -518,19 +553,21 @@ def link_next_frame(master_cell_list, frame, frame_num):
 #         cell_list (list): A list of cell objects.
 
 #     Returns:
-#         corrected_cell_list (list): A modified list of cell objects after culling problematic cells.
+#       corrected_cell_list (list):
+#           A modified list of cell objects after
+#           culling problematic cells.
 #     """
 #     try:
 #         problematic_cells = get_cells_to_cull(cell_list)
 #     except IndexError:
 #         print("cell list is empty")
 #         raise IndexError
-    
+
 #     if problematic_cells is not None:
 #         corrected_cell_list = cull_duplicates(cell_list, problematic_cells)
 #     else:
 #         corrected_cell_list = cell_list
-    
+
 #     return corrected_cell_list
 
 
@@ -546,7 +583,8 @@ def track_healing(cell_list, dist_thresh):
         # get coord from 2 frames ago
         two_frames_ago_coord = cell.coords[len(cell.coords)-3]
         # if dist between positions is below threshold, heal track
-        if dist_between_points(most_recent_coord, two_frames_ago_coord) < dist_thresh:
+        if dist_between_points(most_recent_coord,
+                               two_frames_ago_coord) < dist_thresh:
             # set coord from 1 frame ago to avg of recent positions
             healed_x = (most_recent_coord[0] + two_frames_ago_coord[0])/2
             healed_y = (most_recent_coord[1] + two_frames_ago_coord[1])/2
@@ -560,7 +598,7 @@ def track_healing(cell_list, dist_thresh):
         # so now all cells should be either 0 or 2 problematic status
         # i.e. to live or to die (no more on death row)
         healed_tracks[i] = cell
-    
+
     return healed_tracks
 
 # def correct_links(cell_list, distance_threshold):
@@ -574,7 +612,8 @@ def track_healing(cell_list, dist_thresh):
 #         still_problematics = get_all_problematics(healed_tracks)
 #         # cull still problematic cells
 #         if still_problematics is not None:
-#             corrected_cell_list = cull_duplicates(cell_list, still_problematics)
+#             corrected_cell_list = cull_duplicates(
+#                                   cell_list, still_problematics)
 #         else:
 #             corrected_cell_list = cell_list
 #         # now there should be no problematic cells left
@@ -590,31 +629,33 @@ def track_healing(cell_list, dist_thresh):
 #         test = get_all_problematics(cell_list)
 #         return cell_list
 
+
 def increment_all_problematics(cell_list):
     """
     Iterates through list of problematic cells
 
     Args:
         cell_list (list): A list of cell objects.
-    
+
     Returns:
-        problematics_list: 
+        problematics_list:
     """
     problematics_list = np.empty(len(cell_list), dtype=object)
-    for i, cell in enumerate(cell_list): # cells_to_cull
+    for i, cell in enumerate(cell_list):  # cells_to_cull
         cell.increment_problematic()
         problematics_list[i] = cell
-    
+
     return problematics_list
+
 
 # gets all problematic cells from cell list
 def get_all_problematics(cell_list):
     """
     Args:
         cell_list (list): A list of cell objects.
-    
+
     Returns:
-        problem_cells: 
+        problem_cells:
     """
     problem_cells = []
     for cell in cell_list:
@@ -630,9 +671,9 @@ def get_all_death_row(cell_list):
     """
     Args:
         cell_list (list): A list of cell objects.
-    
+
     Returns:
-        problem_cells: 
+        problem_cells:
     """
     problem_cells = []
     for cell in cell_list:
@@ -653,7 +694,6 @@ def correct_links(cell_list, distance_threshold):
     if old_problematics is not None:
         healed_tracks = track_healing(old_problematics, distance_threshold)
         # see which of these are still problematic
-        # 
         death_row = get_all_death_row(healed_tracks)
         # cull still problematic cells
         if death_row is not None:
@@ -663,24 +703,33 @@ def correct_links(cell_list, distance_threshold):
         # now there should be no problematic cells left
         # they have been either culled or healed
         # so now, can get new problematic cells
-        # note distthresh is divided by 2 because distthresh is based on what is reasonable
-        # for the cell to have moved across 2 frames, here we want only what is reasonable
-        # movement for one frame
-        current_problematic_cells = get_cells_to_cull(corrected_cell_list, distance_threshold/2)
-        current_problematic_cells = increment_all_problematics(current_problematic_cells)
+        # note distthresh is divided by 2 because distthresh
+        # is based on what is reasonable
+        # for the cell to have moved across 2 frames,
+        # here we want only what is reasonable movement for one frame
+        current_problematic_cells = get_cells_to_cull(
+                                    corrected_cell_list,
+                                    distance_threshold/2)
+        current_problematic_cells = increment_all_problematics(
+                                    current_problematic_cells)
 
-        corrected_cell_list = list(set(corrected_cell_list).difference(set(current_problematic_cells)))
+        corrected_cell_list = list(set(
+                              corrected_cell_list).difference(
+                                  set(current_problematic_cells)))
         corrected_cell_list.extend(current_problematic_cells)
 
         return corrected_cell_list
     else:
-        # if there are no problematics from the last frame, just get the current 
-        # problematic cells and set to 1
-        current_problematic_cells = get_cells_to_cull(cell_list, distance_threshold/2)
+        # if there are no problematics from the last frame,
+        # just get the current problematic cells and set to 1
+        current_problematic_cells = get_cells_to_cull(
+                                    cell_list, distance_threshold/2)
         # incremenet problematic for all current cells
-        current_problematic_cells = increment_all_problematics(current_problematic_cells)
+        current_problematic_cells = increment_all_problematics(
+                                    current_problematic_cells)
 
-        corrected_cell_list = list(set(cell_list).difference(set(current_problematic_cells)))
+        corrected_cell_list = list(set(cell_list).difference(
+                                set(current_problematic_cells)))
         corrected_cell_list.extend(current_problematic_cells)
 
         return corrected_cell_list

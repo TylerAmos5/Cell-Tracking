@@ -2,8 +2,9 @@ import numpy as np
 
 
 class Cell:
-    def __init__(self, coords=None, contours=None, channel2_ratio=None, channel3_avg=None,
-                 parent=None, children=None, birthday=0, problematic=0):
+    def __init__(self, coords=None, contours=None, channel2_ratio=None,
+                 channel3_avg=None, parent=None, children=None,
+                 birthday=0, problematic=0):
         if coords is None:
             coords = []
         if contours is None:
@@ -36,7 +37,7 @@ class Cell:
 
     def add_channel3_avg(self, avg):
         self.channel3_avg.append(avg)
-    
+
     def add_channel2_ratio(self, ratio):
         self.channel2_ratio.append(ratio)
 
@@ -53,7 +54,7 @@ class Cell:
         except IndexError:
             print("IndexError: No coordinates found for this cell")
             raise IndexError
-            
+
     def increment_problematic(self):
         self.problematic += 1
 
