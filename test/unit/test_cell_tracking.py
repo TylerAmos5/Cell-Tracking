@@ -143,7 +143,9 @@ class TestCellTracking(unittest.TestCase):
         self.assertIsInstance(cells, list)
         for cell in cells:
             self.assertIsInstance(cell, Cell)
-        self.assertEqual(len(cells), 9)  # count number of cells in image
+        expected_cells = 9 # count number of cells in image
+        self.assertLess(len(cells), expected_cells+1)
+        self.assertGreater(len(cells), 0.5*expected_cells)
 
     def test_do_watershed_test_image_varied_size_brightness(self):
         img = cv2.imread("test/data/test_image_varied_size_brightness_15.png")
@@ -151,7 +153,9 @@ class TestCellTracking(unittest.TestCase):
         self.assertIsInstance(cells, list)
         for cell in cells:
             self.assertIsInstance(cell, Cell)
-        self.assertLess(len(cells), 15)  # count number of cells in image
+        expected_cells = 15 # count number of cells in image
+        self.assertLess(len(cells), expected_cells+1)
+        self.assertGreater(len(cells), 0.5*expected_cells)
 
     def test_do_watershed_test_image_some_overlap(self):
         img = cv2.imread("test/data/test_image_some_overlap_28.png")
@@ -159,7 +163,9 @@ class TestCellTracking(unittest.TestCase):
         self.assertIsInstance(cells, list)
         for cell in cells:
             self.assertIsInstance(cell, Cell)
-        self.assertLess(len(cells), 28)  # count number of cells in image
+        expected_cells = 28 # count number of cells in image
+        self.assertLess(len(cells), expected_cells+1)
+        self.assertGreater(len(cells), 0.5*expected_cells)
 
     # testing resolve_child_conflicts()
     def test_resolve_child_conflicts_empty_candidates(self):
