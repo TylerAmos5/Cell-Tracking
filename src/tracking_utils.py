@@ -148,23 +148,29 @@ def do_watershed(frame):
         else:
             center = get_center(contours[0])
             cont_rect = cv2.boundingRect(contours[0])
-            mVenus_avg = get_channel_data_within_contour(
-                         frame, cont_rect, channel=2)
-            cdk2_cyto_nuc_ratio = get_channel_data_nuc_cyto_ratio(
+            mVenus_avg = get_channel_data_within_nuc_contour(
+                         frame, cont_rect, channel=2, invert=True)
+            cdk2_cyto_nuc_ratio = get_channel2_nuc_cyto_ratio(
                                   frame, cont_rect, channel=1)
             curr_cell = Cell()
             curr_cell.add_coordinate(center)
             curr_cell.add_contour(cont_rect)
-            curr_cell.add_channel3_avg(mVenus_avg)
-            curr_cell.add_channel2_ratio(cdk2_cyto_nuc_ratio)
+            curr_cell.add_channel3_data(mVenus_avg)
+            curr_cell.add_channel2_data(cdk2_cyto_nuc_ratio)
             cells.append(curr_cell)
 
     return cells
 
 
-def get_channel_data_within_contour(frame, contour, channel):
+def get_channel_data_within_nuc_contour(frame, contour, channel, invert=False):
     """
-    doc string
+    Gets the average pixel value for a given channel within a contour.
+
+    Args:
+        frame: frame to segment
+        contour: contour to get channel data from
+        channel: channel to get data from
+        invert: whether to invert the data
     """
     frame_channel_data = frame[:, :, channel]
     # get bounding rectangle
@@ -176,16 +182,24 @@ def get_channel_data_within_contour(frame, contour, channel):
     # compute average pixel value within contour
     average_pixel_val = roi.mean()
     if average_pixel_val != 0:
-        inv_average_pixel_val = 1/average_pixel_val
+        if invert:
+            inv_average_pixel_val = 1 / average_pixel_val
+        else: 
+            inv_average_pixel_val = average_pixel_val
     else:
         0
 
     return inv_average_pixel_val
 
 
-def get_channel_data_nuc_cyto_ratio(frame, contour, channel):
+def get_channel2_nuc_cyto_ratio(frame, contour, channel):
     """
-    doc string
+    Get the channel2 fluorescence ratio of the nucleus to the cytoplasm.
+
+    Args: 
+        frame: frame to segment
+        contour: contour to get channel data from
+        channel: channel to get data from
     """
     frame_channel_data = frame[:, :, channel]
 
@@ -515,9 +529,9 @@ def link_next_frame(master_cell_list, frame, frame_num):
             # add coord and contour from closest cell to master cell object
             curr_cell.add_coordinate(resolved_tracks[i][0].coords[0])
             curr_cell.add_contour(resolved_tracks[i][0].contours[0])
-            curr_cell.add_channel3_avg(resolved_tracks[i][0].channel3_avg[0])
-            curr_cell.add_channel2_ratio(
-                    resolved_tracks[i][0].channel2_ratio[0])
+            curr_cell.add_channel3_data(resolved_tracks[i][0].channel3_data[0])
+            curr_cell.add_channel2_data(
+                    resolved_tracks[i][0].channel2_data[0])
             new_cells.append(curr_cell)
         elif len(resolved_tracks[i]) == 2:
             # create new cell in master list with parent history
@@ -526,8 +540,8 @@ def link_next_frame(master_cell_list, frame, frame_num):
             # give child its tracking
             new_cell.add_coordinate(resolved_tracks[i][1].coords[0])
             new_cell.add_contour(resolved_tracks[i][1].contours[0])
-            new_cell.add_channel3_avg(resolved_tracks[i][1].channel3_avg[0])
-            new_cell.add_channel2_ratio(
+            new_cell.add_channel3_data(resolved_tracks[i][1].channel3_avg[0])
+            new_cell.add_channel2_data(
                     resolved_tracks[i][1].channel2_ratio[0])
             new_cells.append(new_cell)
 
