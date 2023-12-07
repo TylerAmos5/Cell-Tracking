@@ -519,6 +519,287 @@ class TestCellTracking(unittest.TestCase):
             # print(cell.coords)
             self.assertNotIn(cell.coords[1], orig_cell_coords)
 
+    # test track_healing()
+    def test_track_healing(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10, 11), (2, 5), (100, 9),
+                          (100, 7), (10, 10), (55, 55)]
+        test_previous_positions = [(9, 9), (3, 5), (150, 70),
+                                   (90, 8), (11, 11), (54, 60)]
+        test_previous_previous_positions = [(9, 9), (3, 5), (100, 9),
+                                   (90, 8), (11, 11), (54, 60)]
+        for i in range(6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_previous_positions[i])
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell.increment_problematic()
+            test_cell_list.append(test_cell)
+        # output
+        output = tracking_utils.track_healing(test_cell_list, 20)
+        self.assertEqual(len(output), 6) # list should be the same because healed
+        for cell in output:
+            self.assertIn(cell, test_cell_list)
+        previous_coord_list_out = []
+        for cell in output:
+            prev_coord = cell.coords[len(cell.coords)-2]
+            previous_coord_list_out.append(prev_coord)
+        # check to make sure previous coordinate has been 
+        # replaced with previous previous for problematic cell that was too far
+        self.assertIn((100,9), previous_coord_list_out)
+        self.assertNotIn((150,70), previous_coord_list_out)
+        # check to make sure cells that were marked problematic going in
+        # had coords from two previous timesteps averaged together
+        new_coords_list = [(9.5, 10.0), (2.5, 5.0), (95, 7.5), (10.5, 10.5), (54.5, 57.5)]
+        for coord in new_coords_list:
+            self.assertIn(coord, previous_coord_list_out)
+
+    # test increment_all_problematics()
+    def test_increment_all_problematics(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10, 11), (2, 5), (100, 9),
+                          (100, 7), (10, 10), (55, 55)]
+        test_previous_positions = [(9, 9), (3, 5), (150, 70),
+                                   (90, 8), (11, 11), (54, 60)]
+        for i in range(6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell_list.append(test_cell)
+        #output
+        output = tracking_utils.increment_all_problematics(test_cell_list)
+        for i, cell in enumerate(output):
+            self.assertIsInstance(cell, Cell)
+            self.assertEqual(cell.problematic, 1)
+
+    def test_increment_all_problematics_blank_list(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        #output
+        output = tracking_utils.increment_all_problematics(test_cell_list)
+        self.assertEqual(len(output),0)
+
+    # test get_all_problematics()
+    def test_get_all_problematics_no_problematics(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10, 11), (2, 5), (100, 9),
+                          (100, 7), (10, 10), (55, 55)]
+        test_previous_positions = [(9, 9), (3, 5), (150, 70),
+                                   (90, 8), (11, 11), (54, 60)]
+        for i in range(6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell_list.append(test_cell)
+        #output
+        output = tracking_utils.get_all_problematics(test_cell_list)
+        self.assertEqual(output, None)
+
+    def test_get_all_problematics_with_all_problematics(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10, 11), (2, 5), (100, 9),
+                          (100, 7), (10, 10), (55, 55)]
+        test_previous_positions = [(9, 9), (3, 5), (150, 70),
+                                   (90, 8), (11, 11), (54, 60)]
+        for i in range(6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell.increment_problematic()
+            test_cell_list.append(test_cell)
+        
+        #output
+        output = tracking_utils.get_all_problematics(test_cell_list)
+        self.assertEqual(len(output), 6)
+        self.assertEqual(output, test_cell_list)  # should be same because all problematic
+        for i, cell in enumerate(output):
+            self.assertIsInstance(cell, Cell)
+
+    def test_get_all_problematics_with_some_problematics(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10, 11), (2, 5), (100, 9),
+                          (100, 7), (10, 10), (55, 55)]
+        test_previous_positions = [(9, 9), (3, 5), (150, 70),
+                                   (90, 8), (11, 11), (54, 60)]
+        for i in range(4):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell_list.append(test_cell)
+        
+        for i in range(4,6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell.increment_problematic()
+            test_cell_list.append(test_cell)
+        
+        #output
+        output = tracking_utils.get_all_problematics(test_cell_list)
+        self.assertEqual(len(output), 2)
+        self.assertEqual(output, test_cell_list[4:6])  # only last two should be problematic
+        for i, cell in enumerate(output):
+            self.assertIsInstance(cell, Cell)
+
+    # test get_all_death_row()
+    def test_get_all_death_row_no_death_row(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10, 11), (2, 5), (100, 9),
+                          (100, 7), (10, 10), (55, 55)]
+        test_previous_positions = [(9, 9), (3, 5), (150, 70),
+                                   (90, 8), (11, 11), (54, 60)]
+        for i in range(6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell_list.append(test_cell)
+        #output
+        output = tracking_utils.get_all_death_row(test_cell_list)
+        self.assertEqual(output, None)
+
+    def test_get_all_death_row_with_all_death_row(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10, 11), (2, 5), (100, 9),
+                          (100, 7), (10, 10), (55, 55)]
+        test_previous_positions = [(9, 9), (3, 5), (150, 70),
+                                   (90, 8), (11, 11), (54, 60)]
+        for i in range(6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell.increment_problematic()
+            test_cell.increment_problematic()
+            test_cell_list.append(test_cell)
+        #output
+        output = tracking_utils.get_all_death_row(test_cell_list)
+        self.assertEqual(len(output), 6)
+        self.assertEqual(output, test_cell_list)  # should be same because all on death row
+        for i, cell in enumerate(output):
+            self.assertIsInstance(cell, Cell)
+
+    def test_get_all_death_row_with_some_death_row(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10, 11), (2, 5), (100, 9),
+                          (100, 7), (10, 10), (55, 55)]
+        test_previous_positions = [(9, 9), (3, 5), (150, 70),
+                                   (90, 8), (11, 11), (54, 60)]
+        for i in range(4):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell_list.append(test_cell)
+        
+        for i in range(4,6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell.increment_problematic()
+            test_cell.increment_problematic()
+            test_cell_list.append(test_cell)
+        
+        #output
+        output = tracking_utils.get_all_death_row(test_cell_list)
+        self.assertEqual(len(output), 2)
+        self.assertEqual(output, test_cell_list[4:6])  # only last two should be on death row
+        for i, cell in enumerate(output):
+            self.assertIsInstance(cell, Cell)
+
+    # test correct_links()
+    def test_correct_links_nothing_to_cull(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10, 11), (2, 5), (100, 9),
+                          (100, 7), (10, 10), (55, 55)]
+        test_previous_positions = [(9, 9), (3, 5), (150, 70),
+                                   (90, 8), (11, 11), (54, 60)]
+        for i in range(6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell_list.append(test_cell)
+        #output
+        output = tracking_utils.correct_links(test_cell_list,200)
+        self.assertEqual(len(output), 6)
+        for cell in output:
+            self.assertIn(cell, test_cell_list)
+
+    def test_correct_links_with_problematics(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10, 11), (2, 5), (100, 9),
+                          (100, 7), (10, 10), (55, 55)]
+        test_previous_positions = [(9, 9), (3, 5), (150, 70),
+                                   (90, 8), (11, 11), (54, 60)]
+        for i in range(6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell.increment_problematic()
+            test_cell_list.append(test_cell)
+        #output
+        output = tracking_utils.correct_links(test_cell_list, 20)
+        self.assertEqual(len(output), 5)  # third cell should have been removed
+        self.assertNotIn(test_cell_list[2], output)
+        for cell in output:
+            self.assertIn(cell, test_cell_list)
+
+    def test_correct_links_with_healing(self):
+        # make synthetic cell list to test on
+        test_cell_list = []
+        test_positions = [(10, 11), (2, 5), (100, 9),
+                          (100, 7), (10, 10), (55, 55)]
+        test_previous_positions = [(9, 9), (3, 5), (150, 70),
+                                   (90, 8), (11, 11), (54, 60)]
+        test_previous_previous_positions = [(9, 9), (3, 5), (100, 9),
+                                   (90, 8), (11, 11), (54, 60)]
+        for i in range(0,3):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_previous_positions[i])
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell.increment_problematic()
+            test_cell_list.append(test_cell)
+        for i in range(3,6):
+            test_cell = Cell()
+            test_cell.add_coordinate(test_previous_previous_positions[i])
+            test_cell.add_coordinate(test_previous_positions[i])
+            test_cell.add_coordinate(test_positions[i])
+            test_cell_list.append(test_cell)
+        # output
+        output = tracking_utils.correct_links(test_cell_list, 20)
+        self.assertEqual(len(output), 6) # list should be the same because healed
+        for cell in output:
+            self.assertIn(cell, test_cell_list)
+        previous_coord_list_out = []
+        for cell in output:
+            prev_coord = cell.coords[len(cell.coords)-2]
+            previous_coord_list_out.append(prev_coord)
+        # check to make sure previous coordinate has been 
+        # replaced with previous previous for problematic cell that was too far
+        self.assertIn((100,9), previous_coord_list_out)
+        self.assertNotIn((150,70), previous_coord_list_out)
+        # check to make sure cells that were marked problematic going in
+        # had coords from two previous timesteps averaged together
+        # and others not changed
+        new_coords_list = [(2.5, 5.0), (9.5, 10.0), (54, 60), (11, 11), (90, 8)]
+        for coord in new_coords_list:
+            self.assertIn(coord, previous_coord_list_out)
+
+    # test get_channel_data_within_nuc_contour()
+    # def test_get_channel_data_within_nuc_contour(self):
+    #     output = tracking_utils.get_channel_data_within_nuc_contour()
+    
+    # test get_channel_data_nuc_cyto_ratio()
+
 
 def main():
     unittest.main()
