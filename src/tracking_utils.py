@@ -546,6 +546,25 @@ def link_next_frame(master_cell_list, frame, frame_num):
 
 
 def track_healing(cell_list, dist_thresh):
+    """
+    Takes a list of problematic cells and attempts to fix
+    single-frame misidentifications. Compares the most recent
+    coordinate with the coordinate from two frames ago, and
+    if the distance between these points is under a threshold,
+    averages the two coordinates and replaces the cell's position
+    in the last frame with this new average value.
+    
+    Args:
+        cell_list (list): list of cell objects
+        dist_thresh (int): threshold for how far cells can
+            move between three frames.
+    Returns:
+        healed_tracks (list): list of cell objects with
+            healed tracks if possible, or with
+            problematic incremented to two if healing
+            was not successful (cells traveled further than
+            dist_thresh).
+    """
     # iterate over cell list and attempt healing
     # if healing is done, make unproblematic
     healed_tracks = np.empty(len(cell_list), dtype=object)
