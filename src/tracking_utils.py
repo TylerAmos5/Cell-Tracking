@@ -545,34 +545,6 @@ def link_next_frame(master_cell_list, frame, frame_num):
     return new_cells
 
 
-# def correct_links(cell_list):
-#     """
-#     Corrects a cell list by identifying and culling problematic cells.
-
-#     Args:
-#         cell_list (list): A list of cell objects.
-
-#     Returns:
-#       corrected_cell_list (list):
-#           A modified list of cell objects after
-#           culling problematic cells.
-#     """
-#     try:
-#         problematic_cells = get_cells_to_cull(cell_list)
-#     except IndexError:
-#         print("cell list is empty")
-#         raise IndexError
-
-#     if problematic_cells is not None:
-#         corrected_cell_list = cull_duplicates(cell_list, problematic_cells)
-#     else:
-#         corrected_cell_list = cell_list
-
-#     return corrected_cell_list
-
-
-# KEEP TO REIMPLEMENT TRACK HEALING
-
 def track_healing(cell_list, dist_thresh):
     # iterate over cell list and attempt healing
     # if healing is done, make unproblematic
@@ -601,44 +573,18 @@ def track_healing(cell_list, dist_thresh):
 
     return healed_tracks
 
-# def correct_links(cell_list, distance_threshold):
-
-#     # get old problematic cells
-#     old_problematics = get_all_problematics(cell_list)
-#     # attempt to deal with these through track healing
-#     if old_problematics is not None:
-#         healed_tracks = track_healing(old_problematics, distance_threshold)
-#         # see which of these are still problematic
-#         still_problematics = get_all_problematics(healed_tracks)
-#         # cull still problematic cells
-#         if still_problematics is not None:
-#             corrected_cell_list = cull_duplicates(
-#                                   cell_list, still_problematics)
-#         else:
-#             corrected_cell_list = cell_list
-#         # now there should be no problematic cells left
-#         # they have been either culled or healed
-#         # so now, can get new problematic cells
-#         current_problematic_cells = get_cells_to_cull(corrected_cell_list)
-#         increment_all_problematics(current_problematic_cells)
-#         return corrected_cell_list
-#     else:
-#         current_problematic_cells = get_cells_to_cull(cell_list)
-#         # set problematic
-#         increment_all_problematics(current_problematic_cells)
-#         test = get_all_problematics(cell_list)
-#         return cell_list
-
 
 def increment_all_problematics(cell_list):
     """
-    Iterates through list of problematic cells
+    Iterates through list of problematic cells and increments
+    the problematic property of each cell.
 
     Args:
         cell_list (list): A list of cell objects.
 
     Returns:
-        problematics_list:
+        problematics_list: A list of all the cells from the input
+        list with problematic incremented.
     """
     problematics_list = np.empty(len(cell_list), dtype=object)
     for i, cell in enumerate(cell_list):  # cells_to_cull
@@ -651,11 +597,15 @@ def increment_all_problematics(cell_list):
 # gets all problematic cells from cell list
 def get_all_problematics(cell_list):
     """
+    Iterates over a list of cells and returns all the cells
+    whose problematic property == 1.
+
     Args:
         cell_list (list): A list of cell objects.
 
     Returns:
-        problem_cells:
+        problem_cells: A list of all the cells in the
+        input list whose problematic property == 1.
     """
     problem_cells = []
     for cell in cell_list:
@@ -669,11 +619,15 @@ def get_all_problematics(cell_list):
 
 def get_all_death_row(cell_list):
     """
+    Iterates over a list of cells and returns all the cells
+    whose problematic property == 2, i.e. should be culled.
+    
     Args:
         cell_list (list): A list of cell objects.
 
     Returns:
-        problem_cells:
+        problem_cells: A list of all the cells in the
+        input list whose problematic property == 2.
     """
     problem_cells = []
     for cell in cell_list:
@@ -686,7 +640,22 @@ def get_all_death_row(cell_list):
 
 
 def correct_links(cell_list, distance_threshold):
+    """
+    Corrects a cell list by identifying and culling problematic cells.
 
+    Args:
+        cell_list (list): A list of cell objects.
+        distance_threshold (int): A threshold for how far cells
+            can realistically travel between two frames. Cells
+            that travel further than this threshold are assumed
+            to have been misidentified and will be marked
+            problematic.
+
+    Returns:
+      corrected_cell_list (list):
+          A modified list of cell objects after
+          culling problematic cells.
+    """
     # get old problematic cells
     # all should have problematic value of 1 here
     old_problematics = get_all_problematics(cell_list)
