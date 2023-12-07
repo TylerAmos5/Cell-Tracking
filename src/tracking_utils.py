@@ -64,17 +64,17 @@ def get_center(contour):
     return ((cx, cy))
 
 
-def do_watershed(movie, frame_num):
+def do_watershed(frame):
     """
     Segments an image with watershedding.
 
     Args:
-        movie: movie to segment
+        frame: frame to segment
 
     Returns:
         cells: list of cells (1 for each cell)
     """
-    channel0_data = read_nd2.get_channel_rawData(movie, 0, frame_num, 0)
+    channel0_data = frame[:, :, 0]
     rgb_nuc = np.dstack((channel0_data,
                          channel0_data, channel0_data))
     try:
@@ -148,8 +148,8 @@ def do_watershed(movie, frame_num):
         else:
             center = get_center(contours[0])
             cont_rect = cv2.boundingRect(contours[0])
-            mVenus_avg = get_channel_data_within_contour(movie, frame_num, cont_rect, channel=2)
-            cdk2_cyto_nuc_ratio = get_channel_data_nuc_cyto_ratio(movie, frame_num, cont_rect, channel=1)
+            mVenus_avg = get_channel_data_within_contour(frame, cont_rect, channel=2)
+            cdk2_cyto_nuc_ratio = get_channel_data_nuc_cyto_ratio(frame, cont_rect, channel=1)
             curr_cell = Cell()
             curr_cell.add_coordinate(center)
             curr_cell.add_contour(cont_rect)
@@ -160,18 +160,16 @@ def do_watershed(movie, frame_num):
     return cells
 
 
-def get_channel_data_within_contour(movie, frame_num, contour, channel):
+def get_channel_data_within_contour(frame, contour, channel):
     """
     doc string
     """
-    # get desired channel raw data
-    frame_data = read_nd2.get_frame_data(movie, 0, frame_num)
-    
+    frame_channel_data = frame[:, :, channel]
     # get bounding rectangle
     x, y, w, h = contour
     
     # get channel data from rectangle
-    roi = frame_data[y:y+h, x:x+w, channel]
+    roi = frame_channel_data[y:y+h, x:x+w]
     
     # compute average pixel value within contour
     average_pixel_val = roi.mean()
@@ -179,11 +177,11 @@ def get_channel_data_within_contour(movie, frame_num, contour, channel):
 
     return inv_average_pixel_val
 
-def get_channel_data_nuc_cyto_ratio(movie, frame_num, contour, channel):
+def get_channel_data_nuc_cyto_ratio(frame, contour, channel):
     """
     doc string
     """
-    channel2_data = read_nd2.get_channel_rawData(movie, 0, frame_num, channel)
+    frame_channel_data = frame[:, :, channel]
     
     # Assuming 'frame' is your image and 'rect' is your bounding rectangle
     x, y, w, h = contour
@@ -192,17 +190,17 @@ def get_channel_data_nuc_cyto_ratio(movie, frame_num, contour, channel):
 
     # Handle boundary conditions
     x_ext, y_ext = max(0, x_ext), max(0, y_ext)
-    w_ext, h_ext = min(channel2_data.shape[1] - x_ext, w_ext), min(channel2_data.shape[0] - y_ext, h_ext)
+    w_ext, h_ext = min(frame_channel_data.shape[1] - x_ext, w_ext), min(frame_channel_data.shape[0] - y_ext, h_ext)
 
     # Create masks for original and extended rectangles
-    mask_orig = np.zeros(channel2_data.shape, dtype="uint8")
-    mask_ext = np.zeros(channel2_data.shape, dtype="uint8")
+    mask_orig = np.zeros(frame_channel_data.shape, dtype="uint8")
+    mask_ext = np.zeros(frame_channel_data.shape, dtype="uint8")
     cv2.rectangle(mask_orig, (x, y), (x + w, y + h), 255, -1)
     cv2.rectangle(mask_ext, (x_ext, y_ext), (x_ext + w_ext, y_ext + h_ext), 255, -1)
 
     # Apply masks to channel 1 and calculate average pixel values
-    roi_orig = cv2.bitwise_and(channel2_data, channel2_data, mask=mask_orig)
-    roi_ext = cv2.bitwise_and(channel2_data, channel2_data, mask=mask_ext)
+    roi_orig = cv2.bitwise_and(frame_channel_data, frame_channel_data, mask=mask_orig)
+    roi_ext = cv2.bitwise_and(frame_channel_data, frame_channel_data, mask=mask_ext)
     
     # Convert the ROI to a one-dimensional array
     flat_roi_orig = roi_orig[mask_orig == 255].flatten()
@@ -438,7 +436,7 @@ def resolve_child_conflicts(candidates, child_dist_thresh):
     return resolved_tracks
 
 
-def link_next_frame(master_cell_list, movie, frame_num):
+def link_next_frame(master_cell_list, frame, frame_num):
     """
     Links all of the cells in a new frame to the cell
     lineages in the master cell list (and all previous frames).
@@ -455,7 +453,8 @@ def link_next_frame(master_cell_list, movie, frame_num):
         new_cells: updated list of cells based on new data
     """
     # get all the cells in the current frame
-    curr_frame_cells = do_watershed(movie, frame_num)
+    
+    curr_frame_cells = do_watershed(frame)
 
     # check cells against previous frame
     candidates = np.empty(len(master_cell_list), dtype=object)

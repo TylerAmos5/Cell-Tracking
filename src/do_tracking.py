@@ -42,11 +42,13 @@ def main():
 
     movie = read_nd2.read_nd2(nd2)
     site0 = read_nd2.get_site_data(movie, 0)    
-    master_cells = tracking_utils.do_watershed(movie, 0)
+    frame0 = read_nd2.get_frame_data(movie, 0, 0)
+    master_cells = tracking_utils.do_watershed(frame0)
 
     # loop over remaining frames and do track linking
     numcells = []
     for i in range(1, len(site0)):
+        cur_frame = read_nd2.get_frame_data(movie, 0, i)
         cur_frame_nuc = read_nd2.get_channel_rawData(movie, 0,
                                                      i, 0)
         curr_nuc_rbg = np.dstack((cur_frame_nuc, cur_frame_nuc,
@@ -56,7 +58,7 @@ def main():
                                  cv2.NORM_MINMAX, dtype=cv2.CV_8U)
         
         master_cells = tracking_utils.link_next_frame(master_cells,
-                                                      movie, i)
+                                                      cur_frame, i)
         master_cells = tracking_utils.correct_links(master_cells,  distance_threshold=30)
         
         if i == (len(site0)-1):
