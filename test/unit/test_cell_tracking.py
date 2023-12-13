@@ -845,14 +845,6 @@ class TestCellTracking(unittest.TestCase):
         for coord in new_coords_list:
             self.assertIn(coord, previous_coord_list_out)
 
-    # test get_channel_data_within_nuc_contour()
-    # def test_get_channel_data_within_nuc_contour(self):
-    #     frame = cv2.imread("test/data/test_image.png")
-    #     contour = 
-    #     output = tracking_utils.get_channel_data_within_nuc_contour(frame, contour, channel=2, invert=True)
-        
-    # test get_channel_data_nuc_cyto_ratio()
-
 
 def main():
     unittest.main()
