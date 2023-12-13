@@ -64,7 +64,10 @@ Basic do_tracking.py usage:
 
 ```
 python src/do_tracking.py [-h] --file_path FILE_PATH --output_path OUTPUT_PATH
+
 ```
+Use --file_path to specify the file path for the input ND2 file.
+Use --output_path to specify the directory where the output will be saved. The file names themselves will be generated automatically based upon the input file name.
 
 ### Specifying additional parameters
 ```
@@ -76,7 +79,7 @@ If this parameter is not defined, the program will plot frames on the x-axis
 ```
 --drug_time
 ```
-Use this paramter to specify what time drug was added to the cells in your experiment.
+Use this parameter to specify what time drug was added to the cells in your experiment.
 A vertical dotted line will be added on the plot to indicate when the drug was added.
 
 ```

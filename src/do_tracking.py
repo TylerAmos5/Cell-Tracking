@@ -25,11 +25,10 @@ def get_args():
                         type=str,
                         help='.nd2 File',
                         required=True)
-
     parser.add_argument('--output_path',
                         type=str,
                         help='Directory to write output file to',
-                        required=False)
+                        required=True)
     parser.add_argument('--time_step',
                         help='Time step between frames (in minutes)',
                         required=False)
