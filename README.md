@@ -139,17 +139,11 @@ snakemake -c1
 ```
 
 #### Running unit tests:
-
-Eventually these tests will run using continuous integration, but in the meantime they can be run using the following code.
-
 ```
 python test/unit/test_cell_tracking.py
 ```
 
 #### Running functional tests:
-
-Eventually these tests will run using continuous integration, but in the meantime they can be run using the following code.
-
 ```
 bash test/func/test_do_tracking.sh
 ```
