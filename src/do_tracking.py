@@ -50,7 +50,6 @@ def main():
     start_time = time.time()
     args = get_args()
     nd2 = args.file_path
-    os.makedirs(args.output_path, exist_ok=True)
     movie = read_nd2.read_nd2(nd2)
     site0 = read_nd2.get_site_data(movie, 0)
     frame0 = read_nd2.get_frame_data(movie, 0, 0)
@@ -92,11 +91,11 @@ def main():
         numcells.append(len(master_cells))
 
     remaining_death_row = tracking_utils.get_all_death_row(master_cells)
-
+    os.makedirs(args.output_path, exist_ok=True)
     # create a dataframe with the tracks and fluorescent data
     tracks = plots.create_tracks_dataframe(master_cells, site0, 'channel2_data',
                                            'channel3_data')
-
+    
     channel3_output = args.output_path + "/channel3_plots"
     if args.make_channel3_plots:
         plots.plot_nuc_fluoro(tracks, 'channel3_data', args.time_step,
@@ -112,14 +111,9 @@ def main():
     well_name = os.path.basename(nd2)
     outfile_name = args.output_path + '/' + well_name + "_tracks.csv"
     outfile_name = outfile_name.replace('.nd2', '')
-    default_out = '../' + well_name + "_tracks.csv"
 
-    try:
-        tracks.to_csv(outfile_name, index=False)
-    except PermissionError:
-        print("Could not write to designated file, writing to repository root")
-        tracks.to_csv(default_out, index=False)
-
+    tracks.to_csv(outfile_name, index=False)
+    
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Execution time: {execution_time} seconds")
