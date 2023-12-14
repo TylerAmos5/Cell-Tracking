@@ -15,12 +15,16 @@ jobs:
       - uses: actions/checkout@v2
         with:
           lfs: true  # Ensure Git LFS files are pulled
+      - name: Set up Git LFS
+        run: |
+          sudo apt-get install git-lfs
+          git lfs install
+
       - uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment.yml
           environment-name: cell_tracking
       - run: |
-          git lfs install
           git lfs pull
           python test/unit/test_cell_tracking.py
 
@@ -33,6 +37,11 @@ jobs:
       - uses: actions/checkout@v2
         with:
           lfs: true  # Ensure Git LFS files are pulled
+      - name: Set up Git LFS
+        run: |
+          sudo apt-get install git-lfs
+          git lfs install
+
       - uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment.yml
