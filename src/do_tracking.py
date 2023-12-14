@@ -12,6 +12,7 @@ import argparse
 import time
 import plots
 
+
 def get_args():
     """Collect filename for movie"
 
@@ -60,7 +61,7 @@ def main():
 
     if args.make_channel3_plots is None:
         args.make_channel3_plots = True
-    
+
     if args.make_channel2_plots is None:
         args.make_channel2_plots = True
 
@@ -93,27 +94,27 @@ def main():
     remaining_death_row = tracking_utils.get_all_death_row(master_cells)
     os.makedirs(args.output_path, exist_ok=True)
     # create a dataframe with the tracks and fluorescent data
-    tracks = plots.create_tracks_dataframe(master_cells, site0, 'channel2_data',
+    tracks = plots.create_tracks_dataframe(master_cells,
+                                           site0, 'channel2_data',
                                            'channel3_data')
-    
+
     channel3_output = args.output_path + "/channel3_plots"
     if args.make_channel3_plots:
         plots.plot_nuc_fluoro(tracks, 'channel3_data', args.time_step,
                               channel3_output, drug_time=args.drug_time)
-    
-    
+
     channel2_output = args.output_path + "/channel2_plots"
     if args.make_channel2_plots:
         plots.plot_cyto_nuc_ratio(tracks, 'channel2_data',
                                   args.time_step, channel2_output)
-    
+
     # Save the DataFrame to a CSV file
     well_name = os.path.basename(nd2)
     outfile_name = args.output_path + '/' + well_name + "_tracks.csv"
     outfile_name = outfile_name.replace('.nd2', '')
 
     tracks.to_csv(outfile_name, index=False)
-    
+
     end_time = time.time()
     execution_time = end_time - start_time
     print(f"Execution time: {execution_time} seconds")

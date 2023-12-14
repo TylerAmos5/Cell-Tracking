@@ -184,7 +184,7 @@ def get_channel_data_within_nuc_contour(frame, contour, channel, invert=False):
     if average_pixel_val != 0:
         if invert:
             inv_average_pixel_val = 1 / average_pixel_val
-        else: 
+        else:
             inv_average_pixel_val = average_pixel_val
     else:
         0
@@ -196,7 +196,7 @@ def get_channel2_nuc_cyto_ratio(frame, contour, channel):
     """
     Get the channel2 fluorescence ratio of the nucleus to the cytoplasm.
 
-    Args: 
+    Args:
         frame: frame to segment
         contour: contour to get channel data from
         channel: channel to get data from
@@ -567,7 +567,7 @@ def track_healing(cell_list, dist_thresh):
     if the distance between these points is under a threshold,
     averages the two coordinates and replaces the cell's position
     in the last frame with this new average value.
-    
+
     Args:
         cell_list (list): list of cell objects
         dist_thresh (int): threshold for how far cells can
@@ -654,7 +654,7 @@ def get_all_death_row(cell_list):
     """
     Iterates over a list of cells and returns all the cells
     whose problematic property == 2, i.e. should be culled.
-    
+
     Args:
         cell_list (list): A list of cell objects.
 

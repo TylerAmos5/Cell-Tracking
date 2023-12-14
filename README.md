@@ -130,7 +130,7 @@ python src/do_tracking.py --file_path='<your_path>/Cell-Tracking/doc/<your_filen
 This repository does not currently contain any ND2 files due to the large file size.
 
 
-#### Running using snakemake:
+### Running using snakemake:
 
 Run the following code from the main repository directory. The file path included in the snakefile will need to be updated with the appropriate file path for your ND2 file.
 
