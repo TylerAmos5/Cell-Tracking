@@ -13,12 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          lfs: true  # Ensure Git LFS files are pulled
       - uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment.yml
           environment-name: cell_tracking
-      - run: | 
-          python -m unittest test/unit/test_cell_tracking.py
+      - run: |
+          git lfs install
+          git lfs pull
+          python test/unit/test_cell_tracking.py
 
   run_func_tests:
     defaults:
@@ -27,11 +31,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          lfs: true  # Ensure Git LFS files are pulled
       - uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment.yml
           environment-name: cell_tracking
       - run: |
+          git lfs install
+          git lfs pull
           bash test/func/test_do_tracking.sh
 
 #   run_style_tests:
