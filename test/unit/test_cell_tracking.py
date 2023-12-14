@@ -13,10 +13,11 @@ from cell import Cell
 
 
 class TestCellTracking(unittest.TestCase):
-    
+
     # testing read_nd2()
     def test_readND2(self):
-        movie = read_nd2.read_nd2("doc/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd2")
+        movie = read_nd2.read_nd2(
+                "doc/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd2")
         site0 = read_nd2.get_site_data(movie, 0)
         frame0_nuc_channel = read_nd2.get_channel_rawData(movie, 0, 0, 0)
 
@@ -24,7 +25,8 @@ class TestCellTracking(unittest.TestCase):
         self.assertEqual(frame0_nuc_channel.shape, (2048, 2044))
 
     def test_readND2_bad_access(self):
-        movie = read_nd2.read_nd2("doc/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd2")
+        movie = read_nd2.read_nd2(
+                "doc/WellD01_ChannelmIFP,mCherry,YFP_Seq0000.nd2")
         with self.assertRaises(KeyError):
             read_nd2.get_site_data(movie, 2)
         with self.assertRaises(IndexError):
@@ -143,7 +145,7 @@ class TestCellTracking(unittest.TestCase):
         self.assertIsInstance(cells, list)
         for cell in cells:
             self.assertIsInstance(cell, Cell)
-        expected_cells = 9 # count number of cells in image
+        expected_cells = 9  # count number of cells in image
         self.assertLess(len(cells), expected_cells+1)
         self.assertGreater(len(cells), 0.5*expected_cells)
 
@@ -153,7 +155,7 @@ class TestCellTracking(unittest.TestCase):
         self.assertIsInstance(cells, list)
         for cell in cells:
             self.assertIsInstance(cell, Cell)
-        expected_cells = 15 # count number of cells in image
+        expected_cells = 15  # count number of cells in image
         self.assertLess(len(cells), expected_cells+1)
         self.assertGreater(len(cells), 0.5*expected_cells)
 
@@ -163,14 +165,15 @@ class TestCellTracking(unittest.TestCase):
         self.assertIsInstance(cells, list)
         for cell in cells:
             self.assertIsInstance(cell, Cell)
-        expected_cells = 28 # count number of cells in image
+        expected_cells = 28  # count number of cells in image
         self.assertLess(len(cells), expected_cells+1)
         self.assertGreater(len(cells), 0.5*expected_cells)
 
     # testing resolve_child_conflicts()
     def test_resolve_child_conflicts_empty_candidates(self):
         candidates = []
-        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 50)
+        resolved_tracks = tracking_utils.resolve_child_conflicts(
+                          candidates, 50)
         for cell in resolved_tracks:
             for i in cell:
                 self.assertIsInstance(i, Cell)
@@ -187,7 +190,8 @@ class TestCellTracking(unittest.TestCase):
         # the first is the most likely cell, the second is the child cell
 
         candidates = [{cell_1: 2, cell_4: 10}, {cell_2: 3, cell_3: 5}]
-        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 50)
+        resolved_tracks = tracking_utils.resolve_child_conflicts(
+                          candidates, 50)
         for cell in resolved_tracks:
             for i in cell:
                 self.assertIsInstance(i, Cell)
@@ -207,7 +211,8 @@ class TestCellTracking(unittest.TestCase):
         # the first is the most likely cell, the second is the child cell
 
         candidates = [{cell_1: 2, cell_3: 10}, {cell_2: 3, cell_3: 5}]
-        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 50)
+        resolved_tracks = tracking_utils.resolve_child_conflicts(
+                          candidates, 50)
         for cell in resolved_tracks:
             for i in cell:
                 self.assertIsInstance(i, Cell)
@@ -227,7 +232,8 @@ class TestCellTracking(unittest.TestCase):
         # dictionary with key as cell object, value as distance
         # from potential parent in previous frame
         candidates = [{cell_1: 2, cell_2: 10}, {cell_2: 3, cell_3: 5}]
-        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 50)
+        resolved_tracks = tracking_utils.resolve_child_conflicts(
+                          candidates, 50)
         for cell in resolved_tracks:
             for i in cell:
                 self.assertIsInstance(i, Cell)
@@ -235,7 +241,7 @@ class TestCellTracking(unittest.TestCase):
         self.assertEqual(expected_output[0][0], resolved_tracks[0][0])
         self.assertEqual(expected_output[1][0], resolved_tracks[1][0])
 
-    def test_resolve_child_conflicts_with_same_child_same_dist(self): # this should pass once pull new changes
+    def test_resolve_child_conflicts_with_same_child_same_dist(self):
         candidates = []
         cell_1 = Cell()
         cell_2 = Cell()
@@ -246,7 +252,8 @@ class TestCellTracking(unittest.TestCase):
         candidates = [{cell_1: 2, cell_3: 5}, {cell_2: 3, cell_3: 5}]
         # dictionary with key as cell object, value as distance
         # from potential parent in previous frame
-        resolved_tracks = tracking_utils.resolve_child_conflicts(candidates, 50)
+        resolved_tracks = tracking_utils.resolve_child_conflicts(
+                          candidates, 50)
         for cell in resolved_tracks:
             for i in cell:
                 self.assertIsInstance(i, Cell)
@@ -329,7 +336,8 @@ class TestCellTracking(unittest.TestCase):
         self.assertIn(curr_frame_cells[1], output)
 
     def test_link_cell_no_movement_from_image(self):
-        master_cells = tracking_utils.do_watershed(cv2.imread("test/data/test_image_9cells.png"))
+        master_cells = tracking_utils.do_watershed(
+                       cv2.imread("test/data/test_image_9cells.png"))
         curr_frame_cells = master_cells
         r = tracking_utils.link_cell(master_cells[0], curr_frame_cells)
         self.assertEqual(len(r), 2)
@@ -388,13 +396,14 @@ class TestCellTracking(unittest.TestCase):
             test_cell = Cell()
             test_cell.add_coordinate(test_positions[i])
             test_cell_list.append(test_cell)
-        
+
         # list of one of the cells to be culled
         to_cull_cell_list = []
         to_cull_cell_list.append(test_cell_list[0])
 
         # test culling function
-        not_culled_list = tracking_utils.cull_duplicates(test_cell_list, to_cull_cell_list)
+        not_culled_list = tracking_utils.cull_duplicates(test_cell_list,
+                                                         to_cull_cell_list)
         self.assertEqual(test_cell_list[1], not_culled_list[0])
 
     def test_cull_duplicates_more_complex(self):
@@ -413,7 +422,7 @@ class TestCellTracking(unittest.TestCase):
         # cells to be culled
         to_cull_cell_list = []
         to_cull_cell_list.append(test_cell_list[0])
-        to_cull_cell_list.append(test_cell_list[2])   
+        to_cull_cell_list.append(test_cell_list[2])
 
         # expected output
         output = [[(54, 60), (55, 55)],
@@ -422,7 +431,8 @@ class TestCellTracking(unittest.TestCase):
                   [(3, 5), (2, 5)]]
 
         # test culling function
-        not_culled_list = tracking_utils.cull_duplicates(test_cell_list, to_cull_cell_list)
+        not_culled_list = tracking_utils.cull_duplicates(test_cell_list,
+                                                         to_cull_cell_list)
         for item in not_culled_list:
             self.assertIn(item.coords, output)
 
@@ -465,11 +475,9 @@ class TestCellTracking(unittest.TestCase):
                 y = coords[1]
                 coord = [(x, y)]
             orig_cell_coords.append(coord)
-        
-        # output
+
         output = tracking_utils.link_next_frame(master_cells, curr_frame, 1)
-        
-        # tests
+
         self.assertEqual(len(output), 4)
         for i, cell in enumerate(output):
             self.assertIsInstance(cell, Cell)
@@ -480,9 +488,9 @@ class TestCellTracking(unittest.TestCase):
 
     def test_link_next_frame_different_images_movement(self):
         image_1 = tifffile.imread("test/data/test_frame_4_cells.tif")
-        image_2 = tifffile.imread("test/data/test_frame_4_cells_movement_v2.tif")
+        im_2 = tifffile.imread("test/data/test_frame_4_cells_movement_v2.tif")
         master_cells = tracking_utils.do_watershed(image_1)
-        curr_frame = image_2
+        curr_frame = im_2
         orig_cell_coords = []
         for cell in master_cells:
             for coords in cell.coords:
@@ -528,7 +536,7 @@ class TestCellTracking(unittest.TestCase):
         test_previous_positions = [(9, 9), (3, 5), (150, 70),
                                    (90, 8), (11, 11), (54, 60)]
         test_previous_previous_positions = [(9, 9), (3, 5), (100, 9),
-                                   (90, 8), (11, 11), (54, 60)]
+                                            (90, 8), (11, 11), (54, 60)]
         for i in range(6):
             test_cell = Cell()
             test_cell.add_coordinate(test_previous_previous_positions[i])
@@ -536,10 +544,9 @@ class TestCellTracking(unittest.TestCase):
             test_cell.add_coordinate(test_positions[i])
             test_cell.increment_problematic()
             test_cell_list.append(test_cell)
-        
-        # output
+
         output = tracking_utils.track_healing(test_cell_list, 20)
-        self.assertEqual(len(output), 6) # list should be the same length
+        self.assertEqual(len(output), 6)  # list should be the same length
         for cell in output:
             self.assertIn(cell, test_cell_list)
         previous_coord_list_out = []
@@ -549,12 +556,14 @@ class TestCellTracking(unittest.TestCase):
             # extract previous coordinates and add to list
             prev_coord = cell.coords[len(cell.coords)-2]
             previous_coord_list_out.append(prev_coord)
-        # check to make sure previous coordinate has been 
+        # check to make sure previous coordinate has been
         # replaced with previous previous for problematic cell that was too far
-        self.assertIn((100,9), previous_coord_list_out)
-        self.assertNotIn((150,70), previous_coord_list_out)
-        # check to make sure cells within distance threshold had previous timesteps averaged
-        new_coords_list = [(9.5, 10.0), (2.5, 5.0), (95, 7.5), (10.5, 10.5), (54.5, 57.5)]
+        self.assertIn((100, 9), previous_coord_list_out)
+        self.assertNotIn((150, 70), previous_coord_list_out)
+        # check to make sure cells within
+        # distance threshold had previous timesteps averaged
+        new_coords_list = [(9.5, 10.0), (2.5, 5.0),
+                           (95, 7.5), (10.5, 10.5), (54.5, 57.5)]
         for coord in new_coords_list:
             self.assertIn(coord, previous_coord_list_out)
 
@@ -566,7 +575,7 @@ class TestCellTracking(unittest.TestCase):
         test_previous_positions = [(9, 9), (3, 5), (150, 70),
                                    (90, 8), (11, 11), (54, 60)]
         test_previous_previous_positions = [(9, 9), (3, 5), (100, 9),
-                                   (90, 8), (11, 11), (54, 60)]
+                                            (90, 8), (11, 11), (54, 60)]
         for i in range(6):
             test_cell = Cell()
             test_cell.add_coordinate(test_previous_previous_positions[i])
@@ -574,10 +583,9 @@ class TestCellTracking(unittest.TestCase):
             test_cell.add_coordinate(test_positions[i])
             test_cell.increment_problematic()
             test_cell_list.append(test_cell)
-        
-        # output
+
         output = tracking_utils.track_healing(test_cell_list, 20)
-        self.assertEqual(len(output), 6) # list should be the same
+        self.assertEqual(len(output), 6)  # list should be the same
         for cell in output:
             self.assertIn(cell, test_cell_list)
         previous_coord_list_out = []
@@ -585,10 +593,14 @@ class TestCellTracking(unittest.TestCase):
             # extract previous coordinates and add to list
             prev_coord = cell.coords[len(cell.coords)-2]
             previous_coord_list_out.append(prev_coord)
-        # check to make sure cells within distance threshold had previous timesteps averaged
-        # check to make sure cells outside distance threshold remain unchanged unless 
-        # previous previous time step the same as current timestep
-        new_coords_list = [(9.5, 10.0), (2.5, 5.0), (150, 70), (95, 7.5), (10.5, 10.5), (54.5, 57.5)]
+        # check to make sure cells within distance threshold
+        # had previous timesteps averaged.
+
+        # check to make sure cells outside distance threshold remain
+        # unchanged unless previous previous
+        # time step the same as current timestep
+        new_coords_list = [(9.5, 10.0), (2.5, 5.0), (150, 70),
+                           (95, 7.5), (10.5, 10.5), (54.5, 57.5)]
         for coord in new_coords_list:
             self.assertIn(coord, previous_coord_list_out)
         # check problematic status - should be zero if healed
@@ -611,8 +623,7 @@ class TestCellTracking(unittest.TestCase):
             test_cell.add_coordinate(test_previous_positions[i])
             test_cell.add_coordinate(test_positions[i])
             test_cell_list.append(test_cell)
-        
-        # output
+
         output = tracking_utils.increment_all_problematics(test_cell_list)
         for i, cell in enumerate(output):
             self.assertIsInstance(cell, Cell)
@@ -621,10 +632,9 @@ class TestCellTracking(unittest.TestCase):
     def test_increment_all_problematics_blank_list(self):
         # make synthetic cell list to test on
         test_cell_list = []
-        
-        # output
+
         output = tracking_utils.increment_all_problematics(test_cell_list)
-        self.assertEqual(len(output),0)
+        self.assertEqual(len(output), 0)
 
     # test get_all_problematics()
     def test_get_all_problematics_no_problematics(self):
@@ -639,8 +649,7 @@ class TestCellTracking(unittest.TestCase):
             test_cell.add_coordinate(test_previous_positions[i])
             test_cell.add_coordinate(test_positions[i])
             test_cell_list.append(test_cell)
-        
-        # output
+
         output = tracking_utils.get_all_problematics(test_cell_list)
         self.assertEqual(output, None)
 
@@ -657,11 +666,11 @@ class TestCellTracking(unittest.TestCase):
             test_cell.add_coordinate(test_positions[i])
             test_cell.increment_problematic()
             test_cell_list.append(test_cell)
-        
-        #output
+
         output = tracking_utils.get_all_problematics(test_cell_list)
         self.assertEqual(len(output), 6)
-        self.assertEqual(output, test_cell_list)  # should be same because all problematic
+        self.assertEqual(output, test_cell_list)
+        # should be same because all problematic
         for i, cell in enumerate(output):
             self.assertIsInstance(cell, Cell)
 
@@ -677,18 +686,18 @@ class TestCellTracking(unittest.TestCase):
             test_cell.add_coordinate(test_previous_positions[i])
             test_cell.add_coordinate(test_positions[i])
             test_cell_list.append(test_cell)
-        
-        for i in range(4,6):
+
+        for i in range(4, 6):
             test_cell = Cell()
             test_cell.add_coordinate(test_previous_positions[i])
             test_cell.add_coordinate(test_positions[i])
             test_cell.increment_problematic()
             test_cell_list.append(test_cell)
-        
-        # output
+
         output = tracking_utils.get_all_problematics(test_cell_list)
         self.assertEqual(len(output), 2)
-        self.assertEqual(output, test_cell_list[4:6])  # only last two should be problematic
+        self.assertEqual(output, test_cell_list[4:6])
+        # only last two should be problematic
         for i, cell in enumerate(output):
             self.assertIsInstance(cell, Cell)
 
@@ -705,8 +714,7 @@ class TestCellTracking(unittest.TestCase):
             test_cell.add_coordinate(test_previous_positions[i])
             test_cell.add_coordinate(test_positions[i])
             test_cell_list.append(test_cell)
-        
-        # output
+
         output = tracking_utils.get_all_death_row(test_cell_list)
         self.assertEqual(output, None)
 
@@ -724,11 +732,11 @@ class TestCellTracking(unittest.TestCase):
             test_cell.increment_problematic()
             test_cell.increment_problematic()
             test_cell_list.append(test_cell)
-        
-        # output
+
         output = tracking_utils.get_all_death_row(test_cell_list)
         self.assertEqual(len(output), 6)
-        self.assertEqual(output, test_cell_list)  # should be same because all on death row
+        self.assertEqual(output, test_cell_list)
+        # should be same because all on death row
         for i, cell in enumerate(output):
             self.assertIsInstance(cell, Cell)
 
@@ -744,19 +752,19 @@ class TestCellTracking(unittest.TestCase):
             test_cell.add_coordinate(test_previous_positions[i])
             test_cell.add_coordinate(test_positions[i])
             test_cell_list.append(test_cell)
-        
-        for i in range(4,6):
+
+        for i in range(4, 6):
             test_cell = Cell()
             test_cell.add_coordinate(test_previous_positions[i])
             test_cell.add_coordinate(test_positions[i])
             test_cell.increment_problematic()
             test_cell.increment_problematic()
             test_cell_list.append(test_cell)
-        
-        #output
+
         output = tracking_utils.get_all_death_row(test_cell_list)
         self.assertEqual(len(output), 2)
-        self.assertEqual(output, test_cell_list[4:6])  # only last two should be on death row
+        self.assertEqual(output, test_cell_list[4:6])
+        # only last two should be on death row
         for i, cell in enumerate(output):
             self.assertIsInstance(cell, Cell)
 
@@ -773,9 +781,9 @@ class TestCellTracking(unittest.TestCase):
             test_cell.add_coordinate(test_previous_positions[i])
             test_cell.add_coordinate(test_positions[i])
             test_cell_list.append(test_cell)
-        
+
         # output
-        output = tracking_utils.correct_links(test_cell_list,200)
+        output = tracking_utils.correct_links(test_cell_list, 200)
         self.assertEqual(len(output), 6)
         for cell in output:
             self.assertIn(cell, test_cell_list)
@@ -794,7 +802,7 @@ class TestCellTracking(unittest.TestCase):
             test_cell.add_coordinate(test_positions[i])
             test_cell.increment_problematic()
             test_cell_list.append(test_cell)
-        
+
         # output
         output = tracking_utils.correct_links(test_cell_list, 20)
         self.assertEqual(len(output), 5)  # third cell should have been removed
@@ -810,38 +818,40 @@ class TestCellTracking(unittest.TestCase):
         test_previous_positions = [(9, 9), (3, 5), (150, 70),
                                    (90, 8), (11, 11), (54, 60)]
         test_previous_previous_positions = [(9, 9), (3, 5), (100, 9),
-                                   (90, 8), (11, 11), (54, 60)]
-        for i in range(0,3):
+                                            (90, 8), (11, 11), (54, 60)]
+        for i in range(0, 3):
             test_cell = Cell()
             test_cell.add_coordinate(test_previous_previous_positions[i])
             test_cell.add_coordinate(test_previous_positions[i])
             test_cell.add_coordinate(test_positions[i])
             test_cell.increment_problematic()
             test_cell_list.append(test_cell)
-        for i in range(3,6):
+        for i in range(3, 6):
             test_cell = Cell()
             test_cell.add_coordinate(test_previous_previous_positions[i])
             test_cell.add_coordinate(test_previous_positions[i])
             test_cell.add_coordinate(test_positions[i])
             test_cell_list.append(test_cell)
-        
+
         # output
         output = tracking_utils.correct_links(test_cell_list, 20)
-        self.assertEqual(len(output), 6) # list should be the same because healed
+        self.assertEqual(len(output), 6)
+        # list should be the same because healed
         for cell in output:
             self.assertIn(cell, test_cell_list)
         previous_coord_list_out = []
         for cell in output:
             prev_coord = cell.coords[len(cell.coords)-2]
             previous_coord_list_out.append(prev_coord)
-        # check to make sure previous coordinate has been 
+        # check to make sure previous coordinate has been
         # replaced with previous previous for problematic cell that was too far
-        self.assertIn((100,9), previous_coord_list_out)
-        self.assertNotIn((150,70), previous_coord_list_out)
+        self.assertIn((100, 9), previous_coord_list_out)
+        self.assertNotIn((150, 70), previous_coord_list_out)
         # check to make sure cells that were marked problematic going in
         # had coords from two previous timesteps averaged together
         # and others not changed
-        new_coords_list = [(2.5, 5.0), (9.5, 10.0), (54, 60), (11, 11), (90, 8)]
+        new_coords_list = [(2.5, 5.0), (9.5, 10.0),
+                           (54, 60), (11, 11), (90, 8)]
         for coord in new_coords_list:
             self.assertIn(coord, previous_coord_list_out)
 
